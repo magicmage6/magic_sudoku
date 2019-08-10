@@ -7,6 +7,8 @@ class SudokuUI:
     self.stdscr = stdscr
     self.height = 18
     self.width = 36
+    self.curr_row = 4
+    self.curr_col = 4
 
   def _draw_board(self):
     max_y, max_x = self.stdscr.getmaxyx()
@@ -26,21 +28,25 @@ class SudokuUI:
     right = left + self.width
     up = int((max_y - self.height) /2 )
     down = up + self.height
+    delta_x = self.width / 9
+    delta_y = self.height / 9
 
     for i in range(10):
-      self.stdscr.hline(int(up + i * self.height / 9), left, curses.ACS_HLINE, self.width)
+      self.stdscr.hline(int(up + i * delta_y), left, curses.ACS_HLINE, self.width)
     
     for i in range(10):
-      self.stdscr.vline(up, int(round(left + i * self.width / 9)), curses.ACS_VLINE, self.height)
+      self.stdscr.vline(up, int(round(left + i * delta_x)), curses.ACS_VLINE, self.height)
     
     for i in range(10):
-      self.stdscr.addch(up, int(left + i * self.width / 9), curses.ACS_TTEE)
-      self.stdscr.addch(down, int(left + i * self.width / 9), curses.ACS_BTEE)
+      self.stdscr.addch(up, int(left + i * delta_x), curses.ACS_TTEE)
+      self.stdscr.addch(down, int(left + i * delta_x), curses.ACS_BTEE)
 
     self.stdscr.addch(up, left, curses.ACS_ULCORNER)
     self.stdscr.addch(up, right, curses.ACS_URCORNER)
     self.stdscr.addch(down, left, curses.ACS_LLCORNER)
     self.stdscr.addch(down, right, curses.ACS_LRCORNER)
+
+    self.stdscr.move(int(up + self.curr_row * delta_y) + 1, int(left + self.curr_col * delta_x) + 2)
 
   def _process_key(self, key):
     if key == ord('-'):
@@ -50,6 +56,14 @@ class SudokuUI:
     elif key == ord('+'):
       self.height += 9
       self.width += 18
+    elif key == curses.KEY_DOWN:
+      self.curr_row = min(8, self.curr_row + 1)
+    elif key == curses.KEY_UP:
+      self.curr_row = max(0, self.curr_row - 1)
+    elif key == curses.KEY_RIGHT:
+      self.curr_col = min(8, self.curr_col + 1)
+    elif key == curses.KEY_LEFT:
+      self.curr_col = max(0, self.curr_col - 1)
 
   def run(self):
     key = 0
