@@ -5,12 +5,14 @@ class Sudoku:
 
   def __init__(self):
     self.data = [[' ' for x in range(9)] for y in range(9)]
+    self.colors = [[1 for x in range(9)] for y in range(9)]
 
-  def set(self, row, col, value):
+  def set(self, row, col, value, color):
     self.data[col][row] = value
+    self.colors[col][row] = color
 
   def get(self, row, col):
-    return self.data[col][row]
+    return self.data[col][row], self.colors[col][row]
 
 class SudokuUI:
 
@@ -20,19 +22,33 @@ class SudokuUI:
     self.width = 36
     self.curr_row = 4
     self.curr_col = 4
+    self.curr_color = 1
     self.sudoku = Sudoku()
+    self._setup_colors()
+
+  def _setup_colors(self):
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    self.num_colors = 7
 
   def _draw_board(self):
     max_y, max_x = self.stdscr.getmaxyx()
     
-    if max_y <= 18:
-      raise RuntimeError('Window height must be greater than 18.')
+    if max_y <= 20:
+      raise RuntimeError('Window height must be greater than 20.')
     if max_x <= 27:
       raise RuntimeError('Window width must be greater than 27.')
     if self.width >= max_x:
       self.height -= 9
       self.width -= 18
-    if self.height >= max_y:
+    # Leaving space for title.
+    if self.height >= max_y - 2:
       self.height -= 9
       self.width -= 18
 
@@ -42,6 +58,11 @@ class SudokuUI:
     down = up + self.height
     delta_x = self.width / 9
     delta_y = self.height / 9
+
+    title = 'Magic Sudoku'
+    self.stdscr.attron(curses.color_pair(self.curr_color))
+    self.stdscr.addstr(int(up / 2), int((max_x - len(title)) / 2), title)
+    self.stdscr.attroff(curses.color_pair(self.curr_color))
 
     for i in range(10):
       self.stdscr.hline(int(up + i * delta_y), left, curses.ACS_HLINE, self.width)
@@ -60,7 +81,10 @@ class SudokuUI:
 
     for i in range(9):
       for j in range(9):
-        self.stdscr.addch(int(up + i * delta_y) + 1, int(left + j * delta_x) + 2, self.sudoku.get(i,j))
+        number, color = self.sudoku.get(i,j)
+        self.stdscr.attron(curses.color_pair(color))
+        self.stdscr.addch(int(up + i * delta_y) + 1, int(left + j * delta_x) + 2, number)
+        self.stdscr.attroff(curses.color_pair(color))
 
     self.stdscr.move(int(up + self.curr_row * delta_y) + 1, int(left + self.curr_col * delta_x) + 2)
 
@@ -80,20 +104,16 @@ class SudokuUI:
       self.curr_col = min(8, self.curr_col + 1)
     elif key == curses.KEY_LEFT:
       self.curr_col = max(0, self.curr_col - 1)
+    elif key == ord('c'):
+      self.curr_color = (self.curr_color + 1) % self.num_colors
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
-      self.sudoku.set(self.curr_row, self.curr_col, chr(key))
+      self.sudoku.set(self.curr_row, self.curr_col, chr(key), self.curr_color)
 
   def run(self):
     key = 0
 
     self.stdscr.clear()
     self.stdscr.refresh()
-
-    curses.start_color()
-    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
-    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
-
 
     while key != ord('q'):
       self.stdscr.clear()
