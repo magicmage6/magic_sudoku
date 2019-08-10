@@ -1,6 +1,17 @@
 import curses
 
 
+class Sudoku:
+
+  def __init__(self):
+    self.data = [[' ' for x in range(9)] for y in range(9)]
+
+  def set(self, row, col, value):
+    self.data[col][row] = value
+
+  def get(self, row, col):
+    return self.data[col][row]
+
 class SudokuUI:
 
   def __init__(self, stdscr):
@@ -9,6 +20,7 @@ class SudokuUI:
     self.width = 36
     self.curr_row = 4
     self.curr_col = 4
+    self.sudoku = Sudoku()
 
   def _draw_board(self):
     max_y, max_x = self.stdscr.getmaxyx()
@@ -46,6 +58,10 @@ class SudokuUI:
     self.stdscr.addch(down, left, curses.ACS_LLCORNER)
     self.stdscr.addch(down, right, curses.ACS_LRCORNER)
 
+    for i in range(9):
+      for j in range(9):
+        self.stdscr.addch(int(up + i * delta_y) + 1, int(left + j * delta_x) + 2, self.sudoku.get(i,j))
+
     self.stdscr.move(int(up + self.curr_row * delta_y) + 1, int(left + self.curr_col * delta_x) + 2)
 
   def _process_key(self, key):
@@ -64,6 +80,8 @@ class SudokuUI:
       self.curr_col = min(8, self.curr_col + 1)
     elif key == curses.KEY_LEFT:
       self.curr_col = max(0, self.curr_col - 1)
+    elif key >= ord('1') and key <= ord('9') or key == ord(' '):
+      self.sudoku.set(self.curr_row, self.curr_col, chr(key))
 
   def run(self):
     key = 0
