@@ -50,14 +50,12 @@ class SudokuUI:
 
   def _draw_board(self):
     """Draw sudoku board."""
-    max_y, max_x = self.stdscr.getmaxyx()
-    
     # Check the screen size.
-    if max_y <= 20:
-      raise RuntimeError('Window height must be greater than 20.')
-    if max_x <= 27:
-      raise RuntimeError('Window width must be greater than 27.')
-    
+    max_y, max_x = self.stdscr.getmaxyx()
+    if max_y <= 20 or max_x <=27:
+      self.stdscr.addstr(0, 0, 'Terminal is too small.')
+      return
+
     # Adjust sudoku board based on the screen size.
     if self.width >= max_x:
       self.height -= 9
@@ -68,9 +66,9 @@ class SudokuUI:
       self.width -= 18
 
     # Calcuate the boundary of the sudoku board.
-    left = int((max_x - self.width) / 2)
+    left = max(0, int((max_x - self.width) / 2))
     right = left + self.width
-    up = int((max_y - self.height) /2 )
+    up = max(0, int((max_y - self.height) /2 ))
     down = up + self.height
     delta_x = self.width / 9
     delta_y = self.height / 9
@@ -87,7 +85,7 @@ class SudokuUI:
     # Show title.
     title = 'Magic Sudoku'
     self.stdscr.attron(curses.color_pair(self.curr_color))
-    self.stdscr.addstr(int(up / 2), int((max_x - len(title)) / 2), title)
+    self.stdscr.addstr(int(up / 2), max(0, int((max_x - len(title)) / 2)), title)
     self.stdscr.attroff(curses.color_pair(self.curr_color))
 
     # Draw lines of the board.
@@ -159,6 +157,7 @@ class SudokuUI:
 
     self.stdscr.move(int(up + (self.curr_row + 0.5) * delta_y), int(left + (self.curr_col + 0.5) * delta_x))
 
+
   def _process_key(self, key):
     """Process the key and mouse events."""
     if key == ord('-'):
@@ -213,12 +212,9 @@ class SudokuUI:
 
     while key != ord('q'):
       self.stdscr.clear()
-
       self._process_key(key)
       self._draw_board()
-
       self.stdscr.refresh()
-
       # Get the input key.
       key = self.stdscr.getch()
 
