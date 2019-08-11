@@ -59,6 +59,8 @@ class SudokuUI:
     self.curr_row = 4
     self.curr_col = 4
     self.curr_color = 1
+    self.mouse_x = None
+    self.mouse_y = None
     self.sudoku = Sudoku()
     self._setup_colors()
 
@@ -94,6 +96,14 @@ class SudokuUI:
     down = up + self.height
     delta_x = self.width / 9
     delta_y = self.height / 9
+
+    if self.mouse_x is not None and self.mouse_y is not None:
+      row = int((self.mouse_y - up) / delta_y)
+      col = int((self.mouse_x - left) / delta_x)
+      self.curr_row = min(8, max(0, row))
+      self.curr_col = min(8, max(0, col))
+      self.mouse_x = None
+      self.mouse_y = None
 
     title = 'Magic Sudoku'
     self.stdscr.attron(curses.color_pair(self.curr_color))
@@ -181,6 +191,8 @@ class SudokuUI:
       self.curr_col = min(8, self.curr_col + 1)
     elif key == curses.KEY_LEFT:
       self.curr_col = max(0, self.curr_col - 1)
+    elif key == curses.KEY_MOUSE:
+      _, self.mouse_x, self.mouse_y, _, _ = curses.getmouse()
     elif key == ord('c'):
       self.curr_color = (self.curr_color + 1) % self.num_colors
     elif key == ord('s'):
@@ -196,9 +208,7 @@ class SudokuUI:
 
   def run(self):
     key = 0
-
-    self.stdscr.clear()
-    self.stdscr.refresh()
+    curses.mousemask(1)
 
     while key != ord('q'):
       self.stdscr.clear()
