@@ -66,10 +66,10 @@ class SudokuUI:
       self.width -= 18
 
     # Calcuate the boundary of the sudoku board.
-    left = max(0, int((max_x - self.width) / 2))
-    right = left + self.width
-    up = max(0, int((max_y - self.height) /2 ))
-    down = up + self.height
+    left = int(round(max(0, int((max_x - self.width) / 2))))
+    right = int(round(left + self.width))
+    up = int(round(max(0, int((max_y - self.height) /2 ))))
+    down = int(round(up + self.height))
     delta_x = self.width / 9
     delta_y = self.height / 9
 
@@ -93,10 +93,10 @@ class SudokuUI:
     # Horizontal lines.
     for i in range(10):
       for j in range(left, right + 1):
-        boards[int(i * delta_y)][j - left] = curses.ACS_HLINE
+        boards[int(round(i * delta_y))][j - left] = curses.ACS_HLINE
     # Vertical lines, and handle corners, edges, and crosses.
     for i in range(10):
-      col = int(left + i * delta_x)
+      col = int(round(left + i * delta_x))
       for row in range(up, down + 1):
         c = boards[row - up][col - left]
         if c != curses.ACS_HLINE:
@@ -186,7 +186,7 @@ class SudokuUI:
       try:
         _, self.mouse_x, self.mouse_y, _, _ = curses.getmouse()
       except Exception:
-        pass
+        curses.beep()
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
       self.curr_color = (self.curr_color + 1) % self.num_colors
