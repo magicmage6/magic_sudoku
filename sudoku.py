@@ -162,10 +162,10 @@ class SudokuUI:
       for j in range(9):
         number, color = self.sudoku.get(i,j)
         self.stdscr.attron(curses.color_pair(color))
-        self.stdscr.addch(int(up + i * delta_y) + 1, int(left + j * delta_x) + 2, number)
+        self.stdscr.addch(int(up + (i + 0.5) * delta_y), int(left + (j + 0.5) * delta_x), number)
         self.stdscr.attroff(curses.color_pair(color))
 
-    self.stdscr.move(int(up + self.curr_row * delta_y) + 1, int(left + self.curr_col * delta_x) + 2)
+    self.stdscr.move(int(up + (self.curr_row + 0.5) * delta_y), int(left + (self.curr_col + 0.5) * delta_x))
 
   def _process_key(self, key):
     if key == ord('-'):
