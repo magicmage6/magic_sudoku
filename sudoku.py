@@ -14,6 +14,27 @@ class Sudoku:
   def get(self, row, col):
     return self.data[col][row], self.colors[col][row]
 
+  def valid(self, row, col, value):
+    if value == ' ':
+      return True
+    for i in range(9):
+      if i != row:
+        if self.data[col][i] == value:
+          return False
+    for i in range(9):
+      if i != col:
+        if self.data[i][row] == value:
+          return False
+    low = int(row / 3) * 3
+    left = int(col / 3) * 3
+    for i in range(low, low + 3):
+      for j in range(left, left + 3):
+        if i != row and j != col:
+          if self.data[j][i] == value:
+            return False
+    return True
+
+
 class SudokuUI:
 
   def __init__(self, stdscr):
@@ -107,7 +128,11 @@ class SudokuUI:
     elif key == ord('c'):
       self.curr_color = (self.curr_color + 1) % self.num_colors
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
-      self.sudoku.set(self.curr_row, self.curr_col, chr(key), self.curr_color)
+      if self.sudoku.valid(self.curr_row, self.curr_col, chr(key)):
+        self.sudoku.set(self.curr_row, self.curr_col, chr(key), self.curr_color)
+      else:
+        curses.beep()
+
 
   def run(self):
     key = 0
