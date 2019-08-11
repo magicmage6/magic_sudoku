@@ -5,15 +5,12 @@ class Sudoku:
 
   def __init__(self):
     self.data = [[' ' for x in range(9)] for y in range(9)]
-    self.colors = [[1 for x in range(9)] for y in range(9)]
-    self.data_file = '/tmp/magic_sudoku.data'
 
-  def set(self, row, col, value, color):
+  def set(self, row, col, value):
     self.data[row][col] = value
-    self.colors[row][col] = color
 
   def get(self, row, col):
-    return self.data[row][col], self.colors[row][col]
+    return self.data[row][col]
 
   def valid(self, row, col, value):
     if value == ' ':
@@ -63,6 +60,7 @@ class SudokuUI:
     self.mouse_y = None
     self.sudoku = Sudoku()
     self._setup_colors()
+    self.data_file = '/tmp/magic_sudoku.data'
 
   def _setup_colors(self):
     curses.start_color()
@@ -74,6 +72,27 @@ class SudokuUI:
     curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_BLUE, curses.COLOR_BLACK)
     self.num_colors = 7
+    self.colors = [[1 for x in range(9)] for y in range(9)]
+
+  def _save(self):
+    try:
+      with open(self.data_file, 'w') as f:
+        for i in range(9):
+          f.write(','.join(self.sudoku.data[i]) + '\n')
+        for i in range(9):
+          f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
+    except IOError:
+      curses.beep()
+  
+  def _load(self):
+    try:
+      with open(self.data_file, 'r') as f:
+        contents = f.read().split('\n')
+        for i in range(9):
+          self.sudoku.data[i] = contents[i].split(',')
+          self.colors[i] = [int(c) for c in contents[i + 9].split(',')]
+    except IOError:
+      curses.beep()
 
   def _draw_board(self):
     max_y, max_x = self.stdscr.getmaxyx()
@@ -168,7 +187,8 @@ class SudokuUI:
 
     for i in range(9):
       for j in range(9):
-        number, color = self.sudoku.get(i,j)
+        number = self.sudoku.get(i,j)
+        color = self.colors[i][j]
         self.stdscr.attron(curses.color_pair(color))
         self.stdscr.addch(int(up + (i + 0.5) * delta_y), int(left + (j + 0.5) * delta_x), number)
         self.stdscr.attroff(curses.color_pair(color))
@@ -196,12 +216,13 @@ class SudokuUI:
     elif key == ord('c'):
       self.curr_color = (self.curr_color + 1) % self.num_colors
     elif key == ord('s'):
-      self.sudoku.save()
+      self._save()
     elif key == ord('l'):
-      self.sudoku.load()
+      self._load()
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       if self.sudoku.valid(self.curr_row, self.curr_col, chr(key)):
-        self.sudoku.set(self.curr_row, self.curr_col, chr(key), self.curr_color)
+        self.sudoku.set(self.curr_row, self.curr_col, chr(key))
+        self.colors[self.curr_row][self.curr_col] = self.curr_color
       else:
         curses.beep()
 
