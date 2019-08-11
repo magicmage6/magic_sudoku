@@ -13,6 +13,16 @@ class Sudoku:
     return self.data[row][col]
 
   def valid(self, row, col, value):
+    """Check if a value is valid in a particular location.
+
+    Args:
+      row: Row of the location.
+      col: Column of the location.
+      value: The value to check.
+
+    Returns:
+      True if the value is valid in the location.
+    """
     if value == ' ':
       return True
     for i in range(9):
@@ -81,12 +91,16 @@ class SudokuUI:
       curses.beep()
 
   def _draw_board(self):
+    """Draw sudoku board."""
     max_y, max_x = self.stdscr.getmaxyx()
     
+    # Check the screen size.
     if max_y <= 20:
       raise RuntimeError('Window height must be greater than 20.')
     if max_x <= 27:
       raise RuntimeError('Window width must be greater than 27.')
+    
+    # Adjust sudoku board based on the screen size.
     if self.width >= max_x:
       self.height -= 9
       self.width -= 18
@@ -95,6 +109,7 @@ class SudokuUI:
       self.height -= 9
       self.width -= 18
 
+    # Calcuate the boundary of the sudoku board.
     left = int((max_x - self.width) / 2)
     right = left + self.width
     up = int((max_y - self.height) /2 )
@@ -102,6 +117,7 @@ class SudokuUI:
     delta_x = self.width / 9
     delta_y = self.height / 9
 
+    # Move the current position to the mouse click location.
     if self.mouse_x is not None and self.mouse_y is not None:
       row = int((self.mouse_y - up) / delta_y)
       col = int((self.mouse_x - left) / delta_x)
@@ -110,16 +126,19 @@ class SudokuUI:
       self.mouse_x = None
       self.mouse_y = None
 
+    # Show title.
     title = 'Magic Sudoku'
     self.stdscr.attron(curses.color_pair(self.curr_color))
     self.stdscr.addstr(int(up / 2), int((max_x - len(title)) / 2), title)
     self.stdscr.attroff(curses.color_pair(self.curr_color))
 
+    # Draw lines of the board.
     boards = [['' for x in range(left, right + 1)] for y in range(up, down + 1)]
+    # Horizontal lines.
     for i in range(10):
       for j in range(left, right + 1):
         boards[int(i * delta_y)][j - left] = curses.ACS_HLINE
-    
+    # Vertical lines, and handle corners, edges, and crosses.
     for i in range(10):
       col = int(left + i * delta_x)
       for row in range(up, down + 1):
@@ -171,6 +190,7 @@ class SudokuUI:
           if color != 0:
             self.stdscr.attroff(curses.color_pair(color))
 
+    # Draw numbers of the sudoku.
     for i in range(9):
       for j in range(9):
         number = self.sudoku.get(i,j)
@@ -182,30 +202,45 @@ class SudokuUI:
     self.stdscr.move(int(up + (self.curr_row + 0.5) * delta_y), int(left + (self.curr_col + 0.5) * delta_x))
 
   def _process_key(self, key):
+    """Process the key and mouse events."""
     if key == ord('-'):
+      # Reduce size of the sudoku board.
       if self.height > 18:
         self.height -= 9
         self.width -= 18
     elif key == ord('+'):
+      # Incresae size of the sudoku board.
       self.height += 9
       self.width += 18
     elif key == curses.KEY_DOWN:
+      # Move cursor down.
       self.curr_row = min(8, self.curr_row + 1)
     elif key == curses.KEY_UP:
+      # Move cursor up.
       self.curr_row = max(0, self.curr_row - 1)
     elif key == curses.KEY_RIGHT:
+      # Move cursor right.
       self.curr_col = min(8, self.curr_col + 1)
     elif key == curses.KEY_LEFT:
+      # Move cursor left.
       self.curr_col = max(0, self.curr_col - 1)
     elif key == curses.KEY_MOUSE:
-      _, self.mouse_x, self.mouse_y, _, _ = curses.getmouse()
+      # Move cursor to the location of the mouse.
+      try:
+        _, self.mouse_x, self.mouse_y, _, _ = curses.getmouse()
+      except Exception:
+        pass
     elif key == ord('c'):
+      # Change current color use for new numbers fill in the board.
       self.curr_color = (self.curr_color + 1) % self.num_colors
     elif key == ord('s'):
+      # Save sudoku to the data file.
       self._save()
     elif key == ord('l'):
+      # Load sudoku from the data file.
       self._load()
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
+      # Fill in a new number in the board. Space erases existing number.
       if self.sudoku.valid(self.curr_row, self.curr_col, chr(key)):
         self.sudoku.set(self.curr_row, self.curr_col, chr(key))
         self.colors[self.curr_row][self.curr_col] = self.curr_color
@@ -215,6 +250,7 @@ class SudokuUI:
 
   def run(self):
     key = 0
+    # Enable mouse click.
     curses.mousemask(1)
 
     while key != ord('q'):
