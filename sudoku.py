@@ -100,20 +100,63 @@ class SudokuUI:
     self.stdscr.addstr(int(up / 2), int((max_x - len(title)) / 2), title)
     self.stdscr.attroff(curses.color_pair(self.curr_color))
 
+    boards = [['' for x in range(left, right + 1)] for y in range(up, down + 1)]
     for i in range(10):
-      self.stdscr.hline(int(up + i * delta_y), left, curses.ACS_HLINE, self.width)
+      for j in range(left, right + 1):
+        boards[int(i * delta_y)][j - left] = curses.ACS_HLINE
     
     for i in range(10):
-      self.stdscr.vline(up, int(round(left + i * delta_x)), curses.ACS_VLINE, self.height)
-    
-    for i in range(10):
-      self.stdscr.addch(up, int(left + i * delta_x), curses.ACS_TTEE)
-      self.stdscr.addch(down, int(left + i * delta_x), curses.ACS_BTEE)
+      col = int(left + i * delta_x)
+      for row in range(up, down + 1):
+        c = boards[row - up][col - left]
+        if c != curses.ACS_HLINE:
+          c = curses.ACS_VLINE
+        elif row == up and col == left:
+          c = curses.ACS_ULCORNER
+        elif row == up and col == right:
+          c = curses.ACS_URCORNER
+        elif row == down and col == left:
+          c = curses.ACS_LLCORNER
+        elif row == down and col == right:
+          c = curses.ACS_LRCORNER
+        elif row == up:
+          c = curses.ACS_TTEE
+        elif row == down:
+          c = curses.ACS_BTEE
+        elif col == left:
+          c = curses.ACS_LTEE
+        elif col == right:
+          c = curses.ACS_RTEE
+        else:
+          c = curses.ACS_PLUS
+        boards[row - up][col - left] = c
 
-    self.stdscr.addch(up, left, curses.ACS_ULCORNER)
-    self.stdscr.addch(up, right, curses.ACS_URCORNER)
-    self.stdscr.addch(down, left, curses.ACS_LLCORNER)
-    self.stdscr.addch(down, right, curses.ACS_LRCORNER)
+    # Set different color for border lines and inner lines.
+    border_color = 0
+    inner_color = 7
+    colors = [[inner_color for x in range(left, right + 1)] for y in range(up, down + 1)]
+    for i in range(4):
+      col = int(left + i * delta_x * 3)
+      for row in range(up, down + 1):
+        colors[row - up][col - left] = border_color
+        if col < right:
+          colors[row - up][col - left + 1] = border_color
+    
+    for i in range(4):
+      row = int(up + i * delta_y * 3)
+      for col in range(left, right + 1):
+        colors[row - up][col - left] = border_color
+        
+    for i in range(up, down + 1):
+      for j in range(left, right + 1):
+        c = boards[i - up][j - left]
+        color = colors[i - up][j - left]
+        if c:
+          if color != 0:
+           self.stdscr.attron(curses.color_pair(color))
+          self.stdscr.addch(i, j, c)
+          if color != 0:
+            self.stdscr.attroff(curses.color_pair(color))
 
     for i in range(9):
       for j in range(9):
