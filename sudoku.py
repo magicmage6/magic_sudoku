@@ -139,8 +139,6 @@ class SudokuUI:
       col = int(left + i * delta_x * 3)
       for row in range(up, down + 1):
         colors[row - up][col - left] = border_color
-        if col < right:
-          colors[row - up][col - left + 1] = border_color
     
     for i in range(4):
       row = int(up + i * delta_y * 3)
