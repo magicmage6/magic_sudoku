@@ -6,33 +6,48 @@ class Sudoku:
   def __init__(self):
     self.data = [[' ' for x in range(9)] for y in range(9)]
     self.colors = [[1 for x in range(9)] for y in range(9)]
+    self.data_file = '/tmp/magic_sudoku.data'
 
   def set(self, row, col, value, color):
-    self.data[col][row] = value
-    self.colors[col][row] = color
+    self.data[row][col] = value
+    self.colors[row][col] = color
 
   def get(self, row, col):
-    return self.data[col][row], self.colors[col][row]
+    return self.data[row][col], self.colors[row][col]
 
   def valid(self, row, col, value):
     if value == ' ':
       return True
     for i in range(9):
       if i != row:
-        if self.data[col][i] == value:
+        if self.data[i][col] == value:
           return False
     for i in range(9):
       if i != col:
-        if self.data[i][row] == value:
+        if self.data[row][i] == value:
           return False
     low = int(row / 3) * 3
     left = int(col / 3) * 3
     for i in range(low, low + 3):
       for j in range(left, left + 3):
         if i != row and j != col:
-          if self.data[j][i] == value:
+          if self.data[i][j] == value:
             return False
     return True
+
+  def save(self):
+    with open(self.data_file, 'w') as f:
+      for i in range(9):
+        f.write(','.join(self.data[i]) + '\n')
+      for i in range(9):
+        f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
+  
+  def load(self):
+    with open(self.data_file, 'r') as f:
+      contents = f.read().split('\n')
+      for i in range(9):
+        self.data[i] = contents[i].split(',')
+        self.colors[i] = [int(c) for c in contents[i + 9].split(',')]
 
 
 class SudokuUI:
@@ -127,6 +142,10 @@ class SudokuUI:
       self.curr_col = max(0, self.curr_col - 1)
     elif key == ord('c'):
       self.curr_color = (self.curr_color + 1) % self.num_colors
+    elif key == ord('s'):
+      self.sudoku.save()
+    elif key == ord('l'):
+      self.sudoku.load()
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       if self.sudoku.valid(self.curr_row, self.curr_col, chr(key)):
         self.sudoku.set(self.curr_row, self.curr_col, chr(key), self.curr_color)
