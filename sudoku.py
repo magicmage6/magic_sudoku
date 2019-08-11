@@ -32,20 +32,6 @@ class Sudoku:
             return False
     return True
 
-  def save(self):
-    with open(self.data_file, 'w') as f:
-      for i in range(9):
-        f.write(','.join(self.data[i]) + '\n')
-      for i in range(9):
-        f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
-  
-  def load(self):
-    with open(self.data_file, 'r') as f:
-      contents = f.read().split('\n')
-      for i in range(9):
-        self.data[i] = contents[i].split(',')
-        self.colors[i] = [int(c) for c in contents[i + 9].split(',')]
-
 
 class SudokuUI:
 
