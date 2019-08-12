@@ -29,7 +29,12 @@ py_binary(
 py_binary(
     name = "solver_test",
     srcs = ["solver_test.py"],
-    data = glob(["test_data/fast_solver/*"]),
+    data = glob(
+        [
+            "test_data/fast_solver/*.data",
+            "test_data/full_solver/*.data",
+        ]
+    ),
     python_version = "PY3",
     deps = [
         ":sudoku_data",

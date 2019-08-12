@@ -28,31 +28,23 @@ def compare_solutions(file_name, solutions, expected_solutions):
     raise RuntimeError('Testing failed.')
 
 
-def test_fast_solver():
-  path = 'test_data/fast_solver'
+def test_solver(path, fast_solve=False):
   for file_name in os.listdir(path):
     full_name = os.path.join(path, file_name)
     sudoku, expected_solutions = read_data_file(full_name)
-    solver = sudoku_solver.SudokuSolver(sudoku)
-    solutions = solver.solve(fast_solve=True)
+    solutions = sudoku_solver.SudokuSolver(sudoku).solve(fast_solve=fast_solve)
     compare_solutions(full_name, solutions, expected_solutions)
-  print('Fast solver tests passed.')
-
-
-def test_full_solver():
-  path = 'test_data/full_solver'
-  for file_name in os.listdir(path):
-    full_name = os.path.join(path, file_name)
-    sudoku, expected_solutions = read_data_file(full_name)
-    solver = sudoku_solver.SudokuSolver(sudoku)
-    solutions = solver.solve()
-    compare_solutions(full_name, solutions, expected_solutions)
-  print('Full solver tests passed.')
+  print('Tests in {} passed.'.format(path))
 
 
 def main():
-  test_fast_solver()
-  test_full_solver()
+  data_path = 'python_sudoku/test_data'
+  if not os.path.exists(data_path):
+    data_path = 'test_data'
+    if not os.path.exists(data_path):
+      raise RuntimeError('No test_data directory found.')
+  test_solver(os.path.join(data_path, 'fast_solver'), fast_solve=True)
+  test_solver(os.path.join(data_path, 'full_solver'))
   print('Tests passed.')
 
 
