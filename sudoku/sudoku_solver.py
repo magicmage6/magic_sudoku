@@ -1,3 +1,4 @@
+import collections
 
 # A region is a row, column, or a box where each number 1-9 will appear once and only once.
 # A region represent a row.
@@ -81,6 +82,7 @@ class SudokuSolver:
 
   def _fast_solve(self):
     solutions = []
+    solution_set = set()
     # for i in range(9):
       # for j in range(9):
         # print(i, j, self._possible_values[i][j])
@@ -89,23 +91,26 @@ class SudokuSolver:
       for i, j in unique_group:
         for c in self._possible_values[i][j]:
           # print('solutions append ', i, j, c)
-          solutions.append((i, j, c))
-          self._sudoku.set(i, j, c)
+          move = (i, j, c)
+          if move not in solution_set:
+            solution_set.add(move)
+            solutions.append(move)
+            self._sudoku.set(i, j, c)
           break
     # for key, value in self._possible_locations.items():
       # print(key, value)
     # for key, value in self._unique_locations.items():
       # print(key, value)
-    
-    unique_locations_solutions = set()
+
     for key, value in self._unique_locations.items():
       _, _, c = key
       row, col = value
-      if (row, col, c) not in unique_locations_solutions:
+      move = (row, col, c)
+      if move not in solutions:
         # print('solutions append row col c ', row, col, c)
-        unique_locations_solutions.add((row, col, c))
-        solutions.append((row, col, c))
-      self._sudoku.set(row, col, c)
+        solution_set.add(move)
+        solutions.append(move)
+        self._sudoku.set(row, col, c)
     for row, column, c in solutions:
       self._update_possible_values(row, column, c)
     return solutions
