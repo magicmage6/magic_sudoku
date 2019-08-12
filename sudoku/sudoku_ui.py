@@ -1,8 +1,12 @@
+"""Sudoku UI."""
+
 import curses
 import sudoku_data
 import sudoku_solver
 
+
 class SudokuUI:
+  """Class for sudoku UI with curses."""
 
   def __init__(self, stdscr):
     self.stdscr = stdscr
@@ -19,6 +23,7 @@ class SudokuUI:
     self.data_file = '/tmp/magic_sudoku.data'
 
   def _setup_colors(self):
+    """Setup curses colors."""
     curses.start_color()
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
@@ -28,7 +33,7 @@ class SudokuUI:
     curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_BLUE, curses.COLOR_BLACK)
     self.num_colors = 7
-    self.colors = [[1 for x in range(9)] for y in range(9)]
+    self.colors = [[1] * 9 for _ in range(9)]
 
   def _save(self):
     try:
@@ -39,7 +44,7 @@ class SudokuUI:
           f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
     except IOError:
       curses.beep()
-  
+
   def _load(self):
     try:
       with open(self.data_file, 'r') as f:
@@ -54,7 +59,7 @@ class SudokuUI:
     """Draw sudoku board."""
     # Check the screen size.
     max_y, max_x = self.stdscr.getmaxyx()
-    if max_y <= 20 or max_x <=27:
+    if max_y <= 20 or max_x <= 27:
       self.stdscr.addstr(0, 0, 'Terminal is too small.')
       return
 
@@ -70,7 +75,7 @@ class SudokuUI:
     # Calcuate the boundary of the sudoku board.
     left = int(round(max(0, int((max_x - self.width) / 2))))
     right = int(round(left + self.width))
-    up = int(round(max(0, int((max_y - self.height) /2 ))))
+    up = int(round(max(0, int((max_y - self.height) / 2))))
     down = int(round(up + self.height))
     delta_x = self.width / 9
     delta_y = self.height / 9
@@ -87,11 +92,12 @@ class SudokuUI:
     # Show title.
     title = 'Magic Sudoku'
     self.stdscr.attron(curses.color_pair(self.curr_color))
-    self.stdscr.addstr(int(up / 2), max(0, int((max_x - len(title)) / 2)), title)
+    self.stdscr.addstr(
+        int(up / 2), max(0, int((max_x - len(title)) / 2)), title)
     self.stdscr.attroff(curses.color_pair(self.curr_color))
 
     # Draw lines of the board.
-    boards = [['' for x in range(left, right + 1)] for y in range(up, down + 1)]
+    boards = [[''] * (right - left + 1) for _ in range(up, down + 1)]
     # Horizontal lines.
     for i in range(10):
       for j in range(left, right + 1):
@@ -126,24 +132,24 @@ class SudokuUI:
     # Set different color for border lines and inner lines.
     border_color = 0
     inner_color = 7
-    colors = [[inner_color for x in range(left, right + 1)] for y in range(up, down + 1)]
+    colors = [[inner_color] * (right - left + 1) for _ in range(up, down + 1)]
     for i in range(4):
       col = int(left + i * delta_x * 3)
       for row in range(up, down + 1):
         colors[row - up][col - left] = border_color
-    
+
     for i in range(4):
       row = int(up + i * delta_y * 3)
       for col in range(left, right + 1):
         colors[row - up][col - left] = border_color
-        
+
     for i in range(up, down + 1):
       for j in range(left, right + 1):
         c = boards[i - up][j - left]
         color = colors[i - up][j - left]
         if c:
           if color != 0:
-           self.stdscr.attron(curses.color_pair(color))
+            self.stdscr.attron(curses.color_pair(color))
           self.stdscr.addch(i, j, c)
           if color != 0:
             self.stdscr.attroff(curses.color_pair(color))
@@ -151,14 +157,17 @@ class SudokuUI:
     # Draw numbers of the sudoku.
     for i in range(9):
       for j in range(9):
-        number = self.sudoku.get(i,j)
+        number = self.sudoku.get(i, j)
         color = self.colors[i][j]
         self.stdscr.attron(curses.color_pair(color))
-        self.stdscr.addch(int(up + (i + 0.5) * delta_y), int(left + (j + 0.5) * delta_x), number)
+        self.stdscr.addch(
+            int(up + (i + 0.5) * delta_y), int(left + (j + 0.5) * delta_x),
+            number)
         self.stdscr.attroff(curses.color_pair(color))
 
-    self.stdscr.move(int(up + (self.curr_row + 0.5) * delta_y), int(left + (self.curr_col + 0.5) * delta_x))
-
+    self.stdscr.move(
+        int(up + (self.curr_row + 0.5) * delta_y),
+        int(left + (self.curr_col + 0.5) * delta_x))
 
   def _process_key(self, key):
     """Process the key and mouse events."""
@@ -209,8 +218,8 @@ class SudokuUI:
       else:
         curses.beep()
 
-
   def run(self):
+    """Run sudoku UI."""
     key = 0
     # Enable mouse click.
     curses.mousemask(1)
@@ -226,7 +235,7 @@ class SudokuUI:
 
 def _run_sudoku(stdscr):
   SudokuUI(stdscr).run()
- 
+
 
 def start_ui():
   curses.wrapper(_run_sudoku)

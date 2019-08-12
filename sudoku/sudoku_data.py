@@ -1,19 +1,29 @@
+"""Sudoku data."""
+
+
 class SudokuData:
+  """Class for sudoku data."""
 
   def __init__(self):
-    self.data = [[' ' for x in range(9)] for y in range(9)]
+    self.data = [[' '] * 9 for _ in range(9)]
 
   def from_lines(self, lines):
     """Load data from a list of lines.
 
     Args:
-      line: A list of lines with numbers or space separated by common.
-        Only the first 9 lines will be used.
+      lines: A list of lines with numbers or space separated by common. Only the
+        first 9 lines will be used.
+
+    Raises:
+      If the lines doesn't have correct format.
     """
     if len(lines) < 9:
       raise RuntimeError('The number of lines is less than 9.')
     for i in range(9):
       self.data[i] = lines[i].split(',')
+      if len(self.data[i]) != 9:
+        raise RuntimeError('The line does not contain 9 values. {}'.format(
+            lines[i]))
 
   def set(self, row, col, value):
     self.data[row][col] = value
@@ -50,4 +60,3 @@ class SudokuData:
           if self.data[i][j] == value:
             return False
     return True
-
