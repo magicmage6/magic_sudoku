@@ -1,5 +1,6 @@
 import curses
 import sudoku_data
+import sudoku_solver
 
 class SudokuUI:
 
@@ -13,6 +14,7 @@ class SudokuUI:
     self.mouse_x = None
     self.mouse_y = None
     self.sudoku = sudoku_data.SudokuData()
+    self.solver = sudoku_solver.SudokuSolver(self.sudoku)
     self._setup_colors()
     self.data_file = '/tmp/magic_sudoku.data'
 
@@ -42,8 +44,8 @@ class SudokuUI:
     try:
       with open(self.data_file, 'r') as f:
         contents = f.read().split('\n')
+        self.sudoku.from_lines(contents)
         for i in range(9):
-          self.sudoku.data[i] = contents[i].split(',')
           self.colors[i] = [int(c) for c in contents[i + 9].split(',')]
     except IOError:
       curses.beep()
@@ -187,6 +189,9 @@ class SudokuUI:
         _, self.mouse_x, self.mouse_y, _, _ = curses.getmouse()
       except Exception:
         curses.beep()
+    elif key == ord('a'):
+      # Automatcially solve the sudoku.
+      self.solver.solve()
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
       self.curr_color = (self.curr_color + 1) % self.num_colors

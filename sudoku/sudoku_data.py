@@ -3,6 +3,18 @@ class SudokuData:
   def __init__(self):
     self.data = [[' ' for x in range(9)] for y in range(9)]
 
+  def from_lines(self, lines):
+    """Load data from a list of lines.
+
+    Args:
+      line: A list of lines with numbers or space separated by common.
+        Only the first 9 lines will be used.
+    """
+    if len(lines) < 9:
+      raise RuntimeError('The number of lines is less than 9.')
+    for i in range(9):
+      self.data[i] = lines[i].split(',')
+
   def set(self, row, col, value):
     self.data[row][col] = value
 
