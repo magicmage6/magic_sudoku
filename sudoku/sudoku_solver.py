@@ -117,5 +117,8 @@ class SudokuSolver:
     """Solve a sudoku."""
     self._initialize_possible_values()
     self._initialize_possible_locations()
-    return self._recursive_solve()
+    if fast_solve:
+      return self._fast_solve()
+    else:
+      return self._recursive_solve()
 

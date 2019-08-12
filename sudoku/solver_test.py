@@ -22,7 +22,7 @@ def test_fast_solver():
     full_name = os.path.join(path, file_name)
     sudoku, expected_solutions = read_data_file(full_name)
     solver = sudoku_solver.SudokuSolver(sudoku)
-    solutions = sorted(['{},{},{}'.format(i, j, c) for i, j, c in solver.solve()])
+    solutions = sorted(['{},{},{}'.format(i, j, c) for i, j, c in solver.solve(fast_solve=True)])
     if solutions != expected_solutions:
       print('Mismtach found for {}.'.format(full_name))
       print('Expected solutions: {}'.format(expected_solutions))
