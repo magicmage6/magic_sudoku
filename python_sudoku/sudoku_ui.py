@@ -4,6 +4,17 @@ import curses
 import sudoku_data
 import sudoku_solver
 
+_MENU = [
+    'q       Quit            ', 'm       Show menu       ',
+    'Up      Cursor up       ', 'Down    Cursor down     ',
+    'Left    Cursor left     ', 'Right   Cursor right    ',
+    '1 - 9   Fill in a number', 'Space   Remove a number ',
+    '+       Increase size   ', '-       Decrease size   ',
+    's       Save            ', 'l       Load            ',
+    'c       Change color    ', 'a       Auto solve      ',
+    'Mouse   Move cursor     ', 'Any     Dismiss menu    '
+]
+
 
 class SudokuUI:
   """Class for sudoku UI with curses."""
@@ -15,6 +26,7 @@ class SudokuUI:
     self.curr_row = 4
     self.curr_col = 4
     self.curr_color = 1
+    self.show_menu = False
     self.mouse_x = None
     self.mouse_y = None
     self.sudoku = sudoku_data.SudokuData()
@@ -57,6 +69,7 @@ class SudokuUI:
 
   def _draw_board(self):
     """Draw sudoku board."""
+    self.stdscr.clear()
     # Check the screen size.
     max_y, max_x = self.stdscr.getmaxyx()
     if max_y <= 20 or max_x <= 27:
@@ -67,12 +80,12 @@ class SudokuUI:
     if self.width >= max_x:
       self.height -= 9
       self.width -= 18
-    # Leaving space for title.
-    if self.height >= max_y - 2:
+    # -4 to Leaving space for title and subtitle.
+    if self.height >= max_y - 4:
       self.height -= 9
       self.width -= 18
 
-    # Calcuate the boundary of the sudoku board.
+    # Calculate the boundary of the sudoku board.
     left = int(round(max(0, int((max_x - self.width) / 2))))
     right = int(round(left + self.width))
     up = int(round(max(0, int((max_y - self.height) / 2))))
@@ -91,9 +104,12 @@ class SudokuUI:
 
     # Show title.
     title = 'Magic Sudoku'
+    title_y = int(up / 2)
     self.stdscr.attron(curses.color_pair(self.curr_color))
-    self.stdscr.addstr(
-        int(up / 2), max(0, int((max_x - len(title)) / 2)), title)
+    self.stdscr.addstr(title_y, max(0, int((max_x - len(title)) / 2)), title)
+    subtitle = 'Press m for menu'
+    self.stdscr.addstr(title_y + 1, max(0, int((max_x - len(subtitle)) / 2)),
+                       subtitle)
     self.stdscr.attroff(curses.color_pair(self.curr_color))
 
     # Draw lines of the board.
@@ -169,9 +185,24 @@ class SudokuUI:
         int(up + (self.curr_row + 0.5) * delta_y),
         int(left + (self.curr_col + 0.5) * delta_x))
 
+    self.stdscr.refresh()
+    if self.show_menu:
+      menu_width = max([len(m) for m in _MENU])
+      menu_height = len(_MENU)
+      menu_left = int(round((max_x - menu_width) / 2))
+      menu_up = int(round((max_y - menu_height) / 2))
+      menu = curses.newwin(menu_height, menu_width + 1, menu_up, menu_left)
+      for i in range(menu_height):
+        menu.addstr(i, 0, _MENU[i], curses.A_REVERSE)
+      curses.curs_set(0)
+      menu.refresh()
+
   def _process_key(self, key):
     """Process the key and mouse events."""
-    if key == ord('-'):
+    if self.show_menu:
+      self.show_menu = False
+      curses.curs_set(1)
+    elif key == ord('-'):
       # Reduce size of the sudoku board.
       if self.height > 18:
         self.height -= 9
@@ -210,6 +241,9 @@ class SudokuUI:
     elif key == ord('l'):
       # Load sudoku from the data file.
       self._load()
+    elif key == ord('m'):
+      # Show or hide menu.
+      self.show_menu = True
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
       if self.sudoku.is_valid_value(self.curr_row, self.curr_col, chr(key)):
@@ -225,10 +259,8 @@ class SudokuUI:
     curses.mousemask(1)
 
     while key != ord('q'):
-      self.stdscr.clear()
       self._process_key(key)
       self._draw_board()
-      self.stdscr.refresh()
       # Get the input key.
       key = self.stdscr.getch()
 

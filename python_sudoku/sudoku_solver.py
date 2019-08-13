@@ -213,9 +213,9 @@ class SudokuSolver:
         break
       else:
         solutions.extend(fast_solutions)
-    
+
     # print('fast solutios ', solutions)
-        
+
     # Try it from the locatin where has the least possible values.
     for i in range(10):
       group = self._location_groups[i]
