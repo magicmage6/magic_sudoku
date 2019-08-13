@@ -31,7 +31,7 @@ class SudokuData:
   def get(self, row, col):
     return self.data[row][col]
 
-  def valid(self, row, col, value):
+  def is_valid_value(self, row, col, value):
     """Check if a value is valid in a particular location.
 
     Args:

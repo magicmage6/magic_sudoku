@@ -212,7 +212,7 @@ class SudokuUI:
       self._load()
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
-      if self.sudoku.valid(self.curr_row, self.curr_col, chr(key)):
+      if self.sudoku.is_valid_value(self.curr_row, self.curr_col, chr(key)):
         self.sudoku.set(self.curr_row, self.curr_col, chr(key))
         self.colors[self.curr_row][self.curr_col] = self.curr_color
       else:
