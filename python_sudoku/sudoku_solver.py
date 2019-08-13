@@ -94,6 +94,7 @@ class SudokuSolver:
 
   def _initialize_possible_values(self):
     """Initialize possible values at every location."""
+    self._possible_values = [[{}] * 9 for _ in range(9)]
     for i in range(9):
       for j in range(9):
         c = self._sudoku.get(i, j)
@@ -181,39 +182,76 @@ class SudokuSolver:
 
     # Check if the sudoku is still valid after all the above changes.
     if not self._sudoku.is_valid():
+      # print('invalid solutons ', solutions)
+      # print('before invert')
+      # self._sudoku.print()
       # Revert the changes.
-      for row, column, value in solutions:
+      for row, col, value in solutions:
+        # print('revertering row ', row, ' col ', col)
         self._sudoku.set(row, col, ' ')
+      # print('after invert')
+      # self._sudoku.print()
       return None
-    for row, column, c in solutions:
-      self._update_possible_values(row, column, c)
+    for row, col, c in solutions:
+      self._update_possible_values(row, col, c)
     return solutions
 
   def _recursive_solve(self):
     solutions = []
     for _ in range(81):
       fast_solutions = self._fast_solve()
-      # print(fast_solutions)
-      if not fast_solutions:
+      # print('fast solutions', fast_solutions)
+      if fast_solutions is None:
+        # print('here invert ', solutions)
+        for row, col, _ in solutions:
+          self._sudoku.set(row, col, ' ')
+        # print('after invert ')
+        # self._sudoku.print()
+        return None
+      elif not fast_solutions:
         break
       else:
         solutions.extend(fast_solutions)
+    
+    # print('fast solutios ', solutions)
         
-    #for i in range(9):
-    #  group = self._location_groups[i]
-    #  if not group:
-    #    continue
-    #  for row, col in group:
-    #    possible_values = copy.copy(self._possible_values[row][col])
-    #    for c in possible_values:
-    #      move = (row, col, c)
-    #      self._sudoku.set(row, col, c)
-    #      self._update_possible_values(row, col, c)
-    #      call recursively
-    #      re initialize if failed
-    #      return if success adding the solutions
-    #    return with failed status
-
+    # Try it from the locatin where has the least possible values.
+    for i in range(9):
+      group = self._location_groups[i]
+      if not group:
+        continue
+      for row, col in group:
+        # This is the location with least possible values, try it here.
+        possible_values = copy.copy(self._possible_values[row][col])
+        try_solutions = None
+        # Try for every possible values.
+        # print('possible values ', possible_values)
+        for value in sorted(possible_values):
+          # print('try ', row, col, value)
+          self._sudoku.set(row, col, value)
+          self._update_possible_values(row, col, value)
+          try_solutions = self._recursive_solve()
+          if try_solutions is None:
+            # Fail to get valid solution, rever the try.
+            # print('not valid ', row, col, value)
+            self._sudoku.set(row, col, ' ')
+            # self._sudoku.print()
+            self._initialize_possible_values()
+            self._initialize_possible_locations()
+          else:
+            # Get a valid solution.
+            solutions.append((row, col, value))
+            solutions.extend(try_solutions)
+            break
+        if try_solutions is None:
+          # Can't find valid solution. Revert fast solutions.
+          for row, col, _ in solutions:
+            self._sudoku.set(row, col, ' ')
+            self._update_possible_values(row, col, value)
+            self._initialize_possible_locations()
+          return None
+        break
+      break
     return solutions
 
   def solve(self, fast_solve=False):
