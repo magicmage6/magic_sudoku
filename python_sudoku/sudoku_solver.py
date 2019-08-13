@@ -1,6 +1,7 @@
 """Sudoku Solver."""
 
 import copy
+import random
 
 # A region is a row, column, or a box where each number 1-9 will appear once and
 # only once.
@@ -216,17 +217,27 @@ class SudokuSolver:
     # print('fast solutios ', solutions)
         
     # Try it from the locatin where has the least possible values.
-    for i in range(9):
+    for i in range(10):
       group = self._location_groups[i]
       if not group:
         continue
       for row, col in group:
         # This is the location with least possible values, try it here.
-        possible_values = copy.copy(self._possible_values[row][col])
+        possible_values = list(self._possible_values[row][col])
+        randomized_values = []
+        nr_values = len(possible_values)
+        for i in range(nr_values):
+          upper = nr_values - i
+          index = 0
+          if upper > 1:
+            index = random.randrange(upper)
+          randomized_values.append(possible_values[index])
+          if index != upper - 1:
+            possible_values[index] = possible_values[upper - 1]
         try_solutions = None
         # Try for every possible values.
         # print('possible values ', possible_values)
-        for value in sorted(possible_values):
+        for value in randomized_values:
           # print('try ', row, col, value)
           self._sudoku.set(row, col, value)
           self._update_possible_values(row, col, value)
