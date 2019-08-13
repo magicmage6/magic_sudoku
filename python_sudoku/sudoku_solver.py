@@ -178,7 +178,12 @@ class SudokuSolver:
         solution_set.add(move)
         solutions.append(move)
         self._sudoku.set(row, col, c)
+
+    # Check if the sudoku is still valid after all the above changes.
     if not self._sudoku.is_valid():
+      # Revert the changes.
+      for row, column, value in solutions:
+        self._sudoku.set(row, col, ' ')
       return None
     for row, column, c in solutions:
       self._update_possible_values(row, column, c)
@@ -193,6 +198,7 @@ class SudokuSolver:
         break
       else:
         solutions.extend(fast_solutions)
+        
     #for i in range(9):
     #  group = self._location_groups[i]
     #  if not group:
