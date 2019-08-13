@@ -31,6 +31,49 @@ class SudokuData:
   def get(self, row, col):
     return self.data[row][col]
 
+  def is_valid(self):
+    """Check if this is valid sudoku.
+
+    A valid sudoku is one that doesn't have conflict at the this time, it
+    does not mean it is solvable.
+
+    Returns:
+      True if the sudoku is valid.
+    """
+    # Check if every row is valid.
+    for row in range(9):
+      value_set = set()
+      for col in range(9):
+        value = self.data[row][col]
+        if value == ' ':
+          continue
+        if value in value_set:
+          return False
+        value_set.add(value)
+    # Check if every column is valid.
+    for col in range(9):
+      value_set = set()
+      for row in range(9):
+        value = self.data[row][col]
+        if value == ' ':
+          continue
+        if value in value_set:
+          return False
+        value_set.add(value)
+    # Check if every box is valid.
+    for low in [0, 3, 6]:
+      for left in [0, 3, 6]:
+        value_set = set()
+        for row in range(low, low + 3):
+          for col in range(left, left + 3):
+            value = self.data[row][col]
+            if value == ' ':
+              continue
+            if value in value_set:
+              return False
+            value_set.add(value)
+    return True
+
   def is_valid_value(self, row, col, value):
     """Check if a value is valid in a particular location.
 

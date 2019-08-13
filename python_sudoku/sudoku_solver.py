@@ -178,6 +178,8 @@ class SudokuSolver:
         solution_set.add(move)
         solutions.append(move)
         self._sudoku.set(row, col, c)
+    if not self._sudoku.is_valid():
+      return None
     for row, column, c in solutions:
       self._update_possible_values(row, column, c)
     return solutions
