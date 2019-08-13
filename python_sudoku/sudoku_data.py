@@ -6,6 +6,7 @@ class SudokuData:
 
   def __init__(self):
     self.data = [[' '] * 9 for _ in range(9)]
+    self._regions = None
 
   def from_lines(self, lines):
     """Load data from a list of lines.
@@ -41,6 +42,27 @@ class SudokuData:
     for row in range(9):
       print(','.join(self.data[row]))
 
+  def _calculate_regions(self):
+    """Calculate all the regions of a sukoku.
+
+    A region is a row, a column, or a box. Each region is a list of all the
+    locations (a tuple of row, column) in that region. As the regions are
+    independent of the numbers, this only needs to be calculated once.
+    """
+
+    # Calculate all the regions, which is either a row, a column, or a box.
+    # Regions for all rows.
+    self._regions = [[(row, col) for col in range(9)] for row in range(9)]
+    # Regions for all columns.
+    self._regions.extend([[(row, col) for row in range(9)] for col in range(9)])
+    # Regions for all boxes.
+    for low in [0, 3, 6]:
+      for left in [0, 3, 6]:
+        box = []
+        for row in range(low, low + 3):
+          box.extend([(row, col) for col in range(left, left + 3)])
+        self._regions.append(box)
+
   def is_valid(self):
     """Check if this is valid sudoku.
 
@@ -50,38 +72,21 @@ class SudokuData:
     Returns:
       True if the sudoku is valid.
     """
-    # Check if every row is valid.
-    for row in range(9):
+    # Get all the regions, which is either a row, a column, or a box.
+    if self._regions is None:
+      self._calculate_regions()
+    # Check if it is valid in every region.
+    for region in self._regions:
       value_set = set()
-      for col in range(9):
+      for row, col in region:
         value = self.data[row][col]
         if value == ' ':
           continue
+        if len(value) != 1 or ord(value) < ord('1') or ord(value) > ord('9'):
+          return False
         if value in value_set:
           return False
         value_set.add(value)
-    # Check if every column is valid.
-    for col in range(9):
-      value_set = set()
-      for row in range(9):
-        value = self.data[row][col]
-        if value == ' ':
-          continue
-        if value in value_set:
-          return False
-        value_set.add(value)
-    # Check if every box is valid.
-    for low in [0, 3, 6]:
-      for left in [0, 3, 6]:
-        value_set = set()
-        for row in range(low, low + 3):
-          for col in range(left, left + 3):
-            value = self.data[row][col]
-            if value == ' ':
-              continue
-            if value in value_set:
-              return False
-            value_set.add(value)
     return True
 
   def is_valid_value(self, row, col, value):
