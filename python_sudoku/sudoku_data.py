@@ -31,7 +31,7 @@ class SudokuData:
   def get(self, row, col):
     return self.data[row][col]
 
-  def print(self):
+  def print_data(self):
     for row in range(9):
       print(','.join(self.data[row]))
 
