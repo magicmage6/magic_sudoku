@@ -143,6 +143,9 @@ class SudokuSolver:
       A list of solutions with each solution as a tuple of row, column and
         value, where value is a character between '1' and '9'.
     """
+    # If some location can't have any possible values, there is not solution.
+    if self._location_groups[0]:
+      return None
     solutions = []
     solution_set = set()
     # for i in range(9):
@@ -188,6 +191,21 @@ class SudokuSolver:
         break
       else:
         solutions.extend(fast_solutions)
+    #for i in range(9):
+    #  group = self._location_groups[i]
+    #  if not group:
+    #    continue
+    #  for row, col in group:
+    #    possible_values = copy.copy(self._possible_values[row][col])
+    #    for c in possible_values:
+    #      move = (row, col, c)
+    #      self._sudoku.set(row, col, c)
+    #      self._update_possible_values(row, col, c)
+    #      call recursively
+    #      re initialize if failed
+    #      return if success adding the solutions
+    #    return with failed status
+
     return solutions
 
   def solve(self, fast_solve=False):

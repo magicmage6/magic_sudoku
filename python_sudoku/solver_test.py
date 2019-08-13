@@ -15,12 +15,19 @@ def read_data_file(file_name):
     else:
       for i in range(nr_solutions):
         expected_solutions.append(lines[i + 10])
-  return sudoku, sorted(expected_solutions)
+  if expected_solutions is None:
+    sorted_solutions = None
+  else:
+    sorted_solutions = sorted(expected_solutions)
+  return sudoku, sorted_solutions
 
 
 def compare_solutions(file_name, solutions, expected_solutions):
-  sorted_solutions = sorted(
-      ['{},{},{}'.format(i, j, c) for i, j, c in solutions])
+  if solutions is None:
+    sorted_solutions = None
+  else:
+    sorted_solutions = sorted(
+        ['{},{},{}'.format(i, j, c) for i, j, c in solutions])
   if sorted_solutions != expected_solutions:
     print('Mismtach found for {}.'.format(file_name))
     print('Expected solutions: {}'.format(expected_solutions))
