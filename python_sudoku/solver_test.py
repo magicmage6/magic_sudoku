@@ -35,12 +35,28 @@ def compare_solutions(file_name, solutions, expected_solutions):
     raise RuntimeError('Testing failed.')
 
 
+def compare_sudoku(file_name, sudoku, original, solution):
+  for row, col, value in solution:
+    original.set(row, col, value)
+  for row in range(9):
+    for col in range(9):
+      if sudoku.get(row, col) != original.get(row, col):
+        print('Mismatch found for {}.'.format(file_name))
+        print('Row {} Column {} Expected {} Actual {}'.format(
+            row, col, original.get(row, col), sudoku.get(row, col)))
+        raise ValueError('Testing failed.')
+
+
 def test_solver(path, fast_solve=False):
   for file_name in os.listdir(path):
     full_name = os.path.join(path, file_name)
-    sudoku, expected_solutions = read_data_file(full_name)
-    solutions = sudoku_solver.SudokuSolver(sudoku).solve(fast_solve=fast_solve)
-    compare_solutions(full_name, solutions, expected_solutions)
+    sudoku, expected_solution = read_data_file(full_name)
+    original = sudoku_data.SudokuData()
+    original.copy(sudoku)
+    solution = sudoku_solver.SudokuSolver(sudoku).solve(fast_solve=fast_solve)
+    compare_solutions(full_name, solution, expected_solution)
+    if solution is not None:
+      compare_sudoku(full_name, sudoku, original, solution)
   print('Tests in {} passed.'.format(path))
 
 

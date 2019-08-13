@@ -15,7 +15,7 @@ class SudokuData:
         first 9 lines will be used.
 
     Raises:
-      If the lines doesn't have correct format.
+      RuntimeError: If the lines doesn't have correct format.
     """
     if len(lines) < 9:
       raise RuntimeError('The number of lines is less than 9.')
@@ -24,6 +24,12 @@ class SudokuData:
       if len(self.data[i]) != 9:
         raise RuntimeError('The line does not contain 9 values. {}'.format(
             lines[i]))
+
+  def copy(self, other):
+    """Copy another sudoku."""
+    for row in range(9):
+      for col in range(9):
+        self.data[row][col] = other.data[row][col]
 
   def set(self, row, col, value):
     self.data[row][col] = value
