@@ -12,9 +12,13 @@ _MENU = [
     ' +       Increase size    ', ' -       Decrease size    ',
     ' s       Save             ', ' l       Load             ',
     ' c       Change color     ', ' a       Auto solve       ',
-    ' h       Hint             ',
+    ' h       Hint             ', ' u       Undo changes     ',
     ' Mouse   Move cursor      ', ' Any     Dismiss menu     '
 ]
+
+# change type.
+_NUMBER_CHANGE = 0
+_COLOR_CHANGE = 1
 
 
 class SudokuUI:
@@ -34,6 +38,7 @@ class SudokuUI:
     self.solver = sudoku_solver.SudokuSolver()
     self._setup_colors()
     self.data_file = '/tmp/magic_sudoku.data'
+    self.changes = []
 
   def _setup_colors(self):
     """Setup curses colors."""
@@ -252,7 +257,10 @@ class SudokuUI:
           break
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
-      self.curr_color = (self.curr_color + 1) % self.num_colors
+      original_color = self.curr_color
+      new_color = (self.curr_color + 1) % self.num_colors
+      self.curr_color = new_color
+      self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
     elif key == ord('s'):
       # Save sudoku to the data file.
       self._save()
@@ -262,11 +270,27 @@ class SudokuUI:
     elif key == ord('m'):
       # Show or hide menu.
       self.show_menu = True
+    elif key == ord('u'):
+      # Undo changes.
+      if self.changes:
+        type, content = self.changes[-1]
+        if type == _NUMBER_CHANGE:
+          row, col, original_value, _ = content
+          self.sudoku.set(row, col, original_value)
+          self.curr_row = row
+          self.curr_col = col
+        else:
+          original_color, _ = content
+          self.curr_color = original_color
+        del self.changes[-1]
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
-      if self.sudoku.is_valid_value(self.curr_row, self.curr_col, chr(key)):
-        self.sudoku.set(self.curr_row, self.curr_col, chr(key))
+      new_value = chr(key)
+      if self.sudoku.is_valid_value(self.curr_row, self.curr_col, new_value):
+        original_value = self.sudoku.get(self.curr_row, self.curr_col)
+        self.sudoku.set(self.curr_row, self.curr_col, new_value)
         self.colors[self.curr_row][self.curr_col] = self.curr_color
+        self.changes.append((_NUMBER_CHANGE, (self.curr_row, self.curr_col, original_value, new_value)))
       else:
         curses.beep()
 
