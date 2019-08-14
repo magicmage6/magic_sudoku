@@ -229,7 +229,7 @@ class SudokuSolver:
           self._update_possible_values(row, col, value)
           try_solutions = self._full_solve()
           if try_solutions is None:
-            # Fail to get valid solution, rever the try.
+            # Fail to get valid solution, revert the try.
             self._sudoku.set(row, col, ' ')
             self._initialize_possible_values()
             self._initialize_possible_locations()
@@ -242,8 +242,8 @@ class SudokuSolver:
           # Can't find valid solution. Revert fast solutions.
           for row, col, _ in solution:
             self._sudoku.set(row, col, ' ')
-            self._update_possible_values(row, col, value)
-            self._initialize_possible_locations()
+          self._initialize_possible_values()
+          self._initialize_possible_locations()
           return None
         break
       break
