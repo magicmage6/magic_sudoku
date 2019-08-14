@@ -142,16 +142,18 @@ class SudokuSolver:
     self._initialize_possible_values()
     self._initialize_possible_locations()
 
-  def _fast_solve(self):
-    """Solves a sudoku with fast approaches.
+  def _partial_solve(self):
+    """Solves a sudoku with approaches similar to human strategies.
 
     This function mimics the common strategies that human uses to solve sudoku
-    without guessing any numbers. It can solve many easy problems, but may not
-    be able to solve difficult problems.
+    without guessing any numbers. It can solve many easy sudokus, but may not
+    be able to solve difficult sudokus. Can be used for giving hints of
+    solution.
 
     Returns:
       A solution as a list of moves with each move as a tuple of row, column and
-        value, where value is a character between '1' and '9'.
+        value, where value is a character between '1' and '9'. Returns None if
+        the sudoku becomes invalid after partial solve.
     """
     # If some location can't have any possible values, there is no solution.
     if self._location_groups[0]:
@@ -188,28 +190,30 @@ class SudokuSolver:
       self._update_possible_values(row, col, value)
     return solution
 
-  def _full_solve(self):
-    """Solves a sudoku combining fast approaches and guessing numbers.
+  def _fast_solve(self):
+    """Solves a sudoku combining human strategies and guessing numbers.
 
     This function combines the common approaches that human uses with number
-    guessing when those approaches are not able to solve the problems.
+    guessing when those approaches are not able to solve the problems. It can
+    solve any solvable sudokus.
 
     Returns:
       A solution as a list of moves with each move as a tuple of row, column and
-        value, where value is a character between '1' and '9'.
+        value, where value is a character between '1' and '9'. Returns None if
+        the sudoku is not solvable.
     """
     solution = []
-    # Apply fast approaches.
+    # Apply human strategies.
     for _ in range(81):
-      fast_solution = self._fast_solve()
-      if fast_solution is None:
+      partial_solution = self._partial_solve()
+      if partial_solution is None:
         for row, col, _ in solution:
           self._sudoku.set(row, col, ' ')
         return None
-      elif not fast_solution:
+      elif not partial_solution:
         break
       else:
-        solution.extend(fast_solution)
+        solution.extend(partial_solution)
 
     # Try it from the location where has the least number of possible values.
     for i in range(10):
@@ -230,13 +234,13 @@ class SudokuSolver:
           randomized_values.append(possible_values[index])
           if index != upper - 1:
             possible_values[index] = possible_values[upper - 1]
-        try_solutions = None
+        try_solution = None
         # Try for every possible values.
         for value in randomized_values:
           self._sudoku.set(row, col, value)
           self._update_possible_values(row, col, value)
-          try_solutions = self._full_solve()
-          if try_solutions is None:
+          try_solution = self._fast_solve()
+          if try_solution is None:
             # Fail to get valid solution, revert the try.
             self._sudoku.set(row, col, ' ')
             # We can incrementally update, but just reinitialize it seems to be fast enough.
@@ -244,10 +248,10 @@ class SudokuSolver:
           else:
             # Get a valid solution.
             solution.append((row, col, value))
-            solution.extend(try_solutions)
+            solution.extend(try_solution)
             break
-        if try_solutions is None:
-          # Can't find valid solution. Revert fast solutions.
+        if try_solution is None:
+          # Can't find valid solution. Revert pervious moves.
           for row, col, _ in solution:
             self._sudoku.set(row, col, ' ')
           # We can incrementally update, but just reinitialize it seems to be fast enough.
@@ -293,20 +297,21 @@ class SudokuSolver:
           return solution
     return solution
 
-  def solve(self, fast=False, simple=False):
+  def solve(self, partial=False, simple=False):
     """Solves a sudoku.
 
     Args:
       simple: If true, use simple solver, otherwise use other solvers.
-      fast: If true, use fast solver, otherwise use full solver.
+      partial: If true, use partial solver, otherwise use fast solver.
 
     Returns:
       A list of solutions with each solution as a tuple of row, column and
-        value, where value is a character between '1' and '9'.
+        value, where value is a character between '1' and '9'. Returns None
+        if the sudoku is not solvable.
     """
     if simple:
       return self._simple_solve()
     self._initialize_data()
-    if fast:
-      return self._fast_solve()
-    return self._full_solve()
+    if partial:
+      return self._partial_solve()
+    return self._fast_solve()
