@@ -45,7 +45,6 @@ class SudokuSolver:
       keys = [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
               (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
       for key in keys:
-        # print('removing key ', key)
         if key in self._possible_locations:
           locations = self._possible_locations[key]
           if (row, col) in locations:
@@ -85,12 +84,9 @@ class SudokuSolver:
     keys = [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
             (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
     for key in keys:
-      # print('key', key)
       if key in self._possible_locations:
-        # print('delete')
         del self._possible_locations[key]
       if key in self._unique_locations:
-        # print('delete unique')
         del self._unique_locations[key]
 
   def _initialize_possible_values(self):
@@ -150,10 +146,6 @@ class SudokuSolver:
       return None
     solutions = []
     solution_set = set()
-    # for i in range(9):
-    # for j in range(9):
-    # print(i, j, self._possible_values[i][j])
-    # Fill in the locations where only one value is possible.
     unique_group = self._location_groups[1]
     if unique_group:
       for i, j in unique_group:
@@ -165,10 +157,6 @@ class SudokuSolver:
             solutions.append(move)
             self._sudoku.set(i, j, c)
           break
-    # for key, value in self._possible_locations.items():
-    # print(key, value)
-    # for key, value in self._unique_locations.items():
-    # print(key, value)
 
     # Fill in the numbers in a region where only one location is possible.
     for key, value in self._unique_locations.items():
@@ -176,22 +164,15 @@ class SudokuSolver:
       row, col = value
       move = (row, col, c)
       if move not in solutions:
-        # print('solutions append row col c ', row, col, c)
         solution_set.add(move)
         solutions.append(move)
         self._sudoku.set(row, col, c)
 
     # Check if the sudoku is still valid after all the above changes.
     if not self._sudoku.is_valid():
-      # print('invalid solutons ', solutions)
-      # print('before invert')
-      # self._sudoku.print()
       # Revert the changes.
       for row, col, value in solutions:
-        # print('revertering row ', row, ' col ', col)
         self._sudoku.set(row, col, ' ')
-      # print('after invert')
-      # self._sudoku.print()
       return None
     for row, col, c in solutions:
       self._update_possible_values(row, col, c)
@@ -201,20 +182,14 @@ class SudokuSolver:
     solutions = []
     for _ in range(81):
       fast_solutions = self._fast_solve()
-      # print('fast solutions', fast_solutions)
       if fast_solutions is None:
-        # print('here invert ', solutions)
         for row, col, _ in solutions:
           self._sudoku.set(row, col, ' ')
-        # print('after invert ')
-        # self._sudoku.print()
         return None
       elif not fast_solutions:
         break
       else:
         solutions.extend(fast_solutions)
-
-    # print('fast solutios ', solutions)
 
     # Try it from the locatin where has the least possible values.
     for i in range(10):
@@ -236,17 +211,13 @@ class SudokuSolver:
             possible_values[index] = possible_values[upper - 1]
         try_solutions = None
         # Try for every possible values.
-        # print('possible values ', possible_values)
         for value in randomized_values:
-          # print('try ', row, col, value)
           self._sudoku.set(row, col, value)
           self._update_possible_values(row, col, value)
           try_solutions = self._recursive_solve()
           if try_solutions is None:
             # Fail to get valid solution, rever the try.
-            # print('not valid ', row, col, value)
             self._sudoku.set(row, col, ' ')
-            # self._sudoku.print()
             self._initialize_possible_values()
             self._initialize_possible_locations()
           else:
@@ -265,7 +236,36 @@ class SudokuSolver:
       break
     return solutions
 
-  def solve(self, fast_solve=False):
+  def simple_solve(self):
+    if not self._sudoku.is_valid():
+      return None
+    solution = []
+    for row in range(9):
+      for col in range(9):
+        if self._sudoku.get(row, col) == ' ':
+          possible_values = []
+          for i in range(9):
+            value = chr(i + ord('1'))
+            if self._sudoku.is_valid_value(row, col, value):
+              possible_values.append(value)
+          if not possible_values:
+            return None
+          try_solution = None
+          for value in possible_values:
+            self._sudoku.set(row, col, value)
+            try_solution = self.simple_solve()
+            if try_solution is None:
+              self._sudoku.set(row, col, ' ')
+            else:
+              solution.append((row, col, value))
+              solution.extend(try_solution)
+              break
+          if try_solution is None:
+            return None
+          return solution
+    return solution
+
+  def solve(self, fast_solve=False, simple=False):
     """Solves a sudoku.
 
     Args:
@@ -275,9 +275,10 @@ class SudokuSolver:
       A list of solutions with each solution as a tuple of row, column and
         value, where value is a character between '1' and '9'.
     """
+    if simple:
+      return self.simple_solve()
     self._initialize_possible_values()
     self._initialize_possible_locations()
     if fast_solve:
       return self._fast_solve()
-    else:
-      return self._recursive_solve()
+    return self._recursive_solve()
