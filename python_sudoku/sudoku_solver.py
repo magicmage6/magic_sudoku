@@ -28,6 +28,14 @@ class SudokuSolver:
     # and the value is the only possible location.
     self._unique_locations = {}
 
+  def _get_region_keys(self, row, col, value):
+    """Get the key for the possible location dictionary for a parituclar location and value.
+
+    This function is used to help update the possible locations when a new number is filled in.
+    """
+    return [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
+            (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
+
   def _remove_possible_values(self, row, col, value):
     """Removes one possible number at a particular location.
 
@@ -42,9 +50,7 @@ class SudokuSolver:
       if (row, col) in self._location_groups[orig_len]:
         self._location_groups[orig_len].remove((row, col))
         self._location_groups[orig_len - 1].add((row, col))
-      keys = [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
-              (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
-      for key in keys:
+      for key in self._get_region_keys(row, col, value):
         if key in self._possible_locations:
           locations = self._possible_locations[key]
           if (row, col) in locations:
@@ -81,9 +87,7 @@ class SudokuSolver:
       for j in range(left, left + 3):
         if (i != row or j != col) and self._sudoku.get(i, j) == ' ':
           self._remove_possible_values(i, j, value)
-    keys = [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
-            (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
-    for key in keys:
+    for key in self._get_region_keys(row, col, value):
       if key in self._possible_locations:
         del self._possible_locations[key]
       if key in self._unique_locations:
@@ -118,21 +122,17 @@ class SudokuSolver:
     and only once.
     """
     self._possible_locations = {}
-    for i in range(9):
-      for j in range(9):
-        if self._sudoku.get(i, j) == ' ':
-          for value in self._possible_values[i][j]:
-            key = (_ROW_REGION, i, value)
-            self._possible_locations.setdefault(key, set()).add((i, j))
-            key = (_COLUMN_REGION, j, value)
-            self._possible_locations.setdefault(key, set()).add((i, j))
-            key = (_BOX_REGION, int(i / 3) * 3 + int(j / 3), value)
-            self._possible_locations.setdefault(key, set()).add((i, j))
+    for row in range(9):
+      for col in range(9):
+        if self._sudoku.get(row, col) == ' ':
+          for value in self._possible_values[row][col]:
+            for key in self._get_region_keys(row, col, value):
+              self._possible_locations.setdefault(key, set()).add((row, col))
     self._unique_locations = {}
-    for key, value in self._possible_locations.items():
-      if len(value) == 1:
-        for c in value:
-          self._unique_locations[key] = c
+    for key, possible_locations in self._possible_locations.items():
+      if len(possible_locations) == 1:
+        for location in possible_locations:
+          self._unique_locations[key] = location
 
   def _fast_solve(self):
     """Solving a sudoku with fast approaches.
