@@ -14,6 +14,22 @@ _COLUMN_REGION = 1
 _BOX_REGION = 2
 
 
+def _get_randomized_list(data):
+  """Returns a randomized list."""
+  randomized_data = list(data)
+  nr_values = len(randomized_data)
+  for i in range(nr_values):
+    upper = nr_values - i
+    # Randomly choosing an index between 0 and upper.
+    index = random.randrange(upper)
+    if index != upper - 1:
+      # Swap index and the last element.
+      tmp = randomized_data[index]
+      randomized_data[index] = randomized_data[upper - 1]
+      randomized_data[upper - 1] = tmp
+  return randomized_data
+
+
 class SudokuSolver:
   """Class for sudoku solver."""
 
@@ -224,20 +240,10 @@ class SudokuSolver:
       for row, col in group:
         # This is the location with the least number of possible values, try it
         # here.
-        possible_values = list(self._possible_values[row][col])
-        randomized_values = []
-        nr_values = len(possible_values)
-        for i in range(nr_values):
-          upper = nr_values - i
-          index = 0
-          if upper > 1:
-            index = random.randrange(upper)
-          randomized_values.append(possible_values[index])
-          if index != upper - 1:
-            possible_values[index] = possible_values[upper - 1]
+        possible_values = _get_randomized_list(self._possible_values[row][col])
         try_solution = None
         # Try for every possible values.
-        for value in randomized_values:
+        for value in possible_values:
           self._sudoku.set(row, col, value)
           self._update_possible_values(row, col, value)
           try_solution = self._fast_solve()
