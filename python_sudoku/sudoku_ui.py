@@ -66,7 +66,7 @@ class SudokuUI:
     curses.init_pair(6, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_BLUE, curses.COLOR_BLACK)
     self.num_colors = 7
-    self.colors = [[1] * 9 for _ in range(9)]
+    self.colors = [[0] * 9 for _ in range(9)]
 
   def _save(self):
     try:
@@ -196,11 +196,13 @@ class SudokuUI:
       for j in range(9):
         number = self.sudoku.get(i, j)
         color = self.colors[i][j]
-        self.stdscr.attron(curses.color_pair(color))
+        if color != 0:
+          self.stdscr.attron(curses.color_pair(color))
         self.stdscr.addch(
             int(up + (i + 0.5) * delta_y), int(left + (j + 0.5) * delta_x),
             number)
-        self.stdscr.attroff(curses.color_pair(color))
+        if color != 0:
+          self.stdscr.attroff(curses.color_pair(color))
 
     self.stdscr.move(
         int(up + (self.curr_row + 0.5) * delta_y),
@@ -248,7 +250,7 @@ class SudokuUI:
     original_sudoku = self.sudoku
     original_colors = self.colors
     original_curr_color = self.curr_color
-    self.colors = [[1] * 9 for _ in range(9)]
+    self.colors = [[0] * 9 for _ in range(9)]
     self.sudoku = new_sudoku
     self.changes.append(
         (_SUDOKU_CHANGE, ((original_sudoku, original_colors,

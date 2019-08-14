@@ -28,9 +28,8 @@ class SudokuGenerator:
     nr_spaces = _NR_SPACES_DICT[level]
     nr_removed = 0
     while nr_removed < nr_spaces:
-      random_number = random.randrange(81)
-      row = random_number / 9
-      col = random_number % 9
+      row = random.randrange(9)
+      col = random.randrange(9)
       if sudoku.get(row, col) != ' ':
         sudoku.set(row, col, ' ')
         nr_removed += 1
