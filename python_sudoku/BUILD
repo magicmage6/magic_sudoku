@@ -33,6 +33,7 @@ py_binary(
         [
             "test_data/fast_solver/*.data",
             "test_data/full_solver/*.data",
+            "test_data/simple_solver/*.data",
         ],
     ),
     python_version = "PY3",
