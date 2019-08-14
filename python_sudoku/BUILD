@@ -31,9 +31,8 @@ py_binary(
     srcs = ["solver_test.py"],
     data = glob(
         [
-            "test_data/fast_solver/*.data",
-            "test_data/full_solver/*.data",
-            "test_data/simple_solver/*.data",
+            "test_data/partial/*.data",
+            "test_data/full/*.data",
         ],
     ),
     python_version = "PY3",
