@@ -1,6 +1,7 @@
 """Sudoku UI."""
 
 import curses
+import os
 import sudoku_data
 import sudoku_generator
 import sudoku_solver
@@ -17,8 +18,6 @@ Right   Cursor right
 Space   Erase a number
 +       Increase size
 -       Decrease size
-s       Save
-l       Load
 c       Change color
 b       Change color back
 a       Auto solve
@@ -68,15 +67,20 @@ class SudokuUI:
     self.num_colors = 7
     self.colors = [[0] * 9 for _ in range(9)]
 
-  def _save(self):
+  def _save(self, file_name):
+    with open(file_name, 'w') as f:
+      for i in range(9):
+        f.write(','.join(self.sudoku.data[i]) + '\n')
+      for i in range(9):
+        f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
+
+  def _auto_save(self):
+    if self.data_file is None:
+      return
     try:
-      with open(self.data_file, 'w') as f:
-        for i in range(9):
-          f.write(','.join(self.sudoku.data[i]) + '\n')
-        for i in range(9):
-          f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
+      self._save(self.data_file)
     except IOError:
-      curses.beep()
+      self.message = 'Auto save failed'
 
   def _load(self):
     try:
@@ -240,6 +244,7 @@ class SudokuUI:
       self.colors[self.curr_row][self.curr_col] = self.curr_color
       self.changes.append((_NUMBER_CHANGE, (self.curr_row, self.curr_col,
                                             original_value, new_value)))
+      self._auto_save()
     else:
       curses.beep()
 
@@ -249,6 +254,7 @@ class SudokuUI:
     new_color = (new_color - 1) % self.num_colors + 1
     self.curr_color = new_color
     self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
+    self._auto_save()
 
   def _change_sudoku(self, new_sudoku):
     """Change the current sudoku."""
@@ -261,6 +267,7 @@ class SudokuUI:
         (_SUDOKU_CHANGE, ((original_sudoku, original_colors,
                            original_curr_color), (self.sudoku, self.colors,
                                                   self.curr_color))))
+    self._auto_save()
 
   def _process_key(self, key):
     """Process the key and mouse events."""
@@ -327,12 +334,6 @@ class SudokuUI:
     elif key == ord('b'):
       # Change current color to previous one.
       self._change_color(self.curr_color - 1)
-    elif key == ord('s'):
-      # Save sudoku to the data file.
-      self._save()
-    elif key == ord('l'):
-      # Load sudoku from the data file.
-      self._load()
     elif key == ord('m'):
       # Show or hide menu.
       self.message = _MENU
@@ -354,15 +355,38 @@ class SudokuUI:
           self.colors = original_colors
           self.curr_color = original_curr_color
         del self.changes[-1]
+        self._auto_save()
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
       self._change_number(self.curr_row, self.curr_col, chr(key))
+
+  def _initialize_sudoku(self):
+    self.data_file = '/tmp/.magic_sudoku_autosave.data'
+    if os.path.exists(self.data_file):
+      self._load()
+    else:
+      self.data_file = '.magic_sudoku_autosave.data'
+      if os.path.exists(self.data_file):
+        self._load()
+      else:
+        self.sudoku = self.generator.get_sudoku()
+        self.data_file = '/tmp/.magic_sudoku_autosave.data'
+        try:
+          self._save(self.data_file)
+        except IOError:
+          self.data_file = '.magic_sudoku_autosave.data'
+          try:
+            self._save(self.data_file)
+          except IOError:
+            self.data_file = None
+            self.message = 'Failed to save'
 
   def run(self):
     """Run sudoku UI."""
     key = 0
     # Enable mouse click.
     curses.mousemask(1)
+    self._initialize_sudoku()
 
     while key != ord('q'):
       self._process_key(key)
