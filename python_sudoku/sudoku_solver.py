@@ -137,7 +137,7 @@ class SudokuSolver:
   def _fast_solve(self):
     """Solving a sudoku with fast approaches.
 
-    This function mimic the common strategies that human uses to solve sudoku
+    This function mimics the common strategies that human uses to solve sudoku
     without guessing any numbers. It can solve many easy problems, but may not
     be able to solve difficult problems.
 
@@ -145,42 +145,40 @@ class SudokuSolver:
       A solution as a list of moves with each move as a tuple of row, column and
         value, where value is a character between '1' and '9'.
     """
-    # If some location can't have any possible values, there is not solution.
+    # If some location can't have any possible values, there is no solution.
     if self._location_groups[0]:
       return None
-    solutions = []
-    solution_set = set()
+    solution = []
+    move_set = set()
+    # Fill in numbers in the location where only one value is possible.
     unique_group = self._location_groups[1]
     if unique_group:
-      for i, j in unique_group:
-        for c in self._possible_values[i][j]:
-          # print('solutions append ', i, j, c)
-          move = (i, j, c)
-          if move not in solution_set:
-            solution_set.add(move)
-            solutions.append(move)
-            self._sudoku.set(i, j, c)
+      for row, col in unique_group:
+        for value in self._possible_values[row][col]:
+          move = (row, col, value)
+          if move not in move_set:
+            move_set.add(move)
+            solution.append(move)
+            self._sudoku.set(row, col, value)
           break
 
     # Fill in the numbers in a region where only one location is possible.
-    for key, value in self._unique_locations.items():
-      _, _, c = key
-      row, col = value
-      move = (row, col, c)
-      if move not in solutions:
-        solution_set.add(move)
-        solutions.append(move)
-        self._sudoku.set(row, col, c)
+    for (_, _, value), (row, col) in self._unique_locations.items():
+      move = (row, col, value)
+      if move not in move_set:
+        move_set.add(move)
+        solution.append(move)
+        self._sudoku.set(row, col, value)
 
     # Check if the sudoku is still valid after all the above changes.
     if not self._sudoku.is_valid():
       # Revert the changes.
-      for row, col, value in solutions:
+      for row, col, value in solution:
         self._sudoku.set(row, col, ' ')
       return None
-    for row, col, c in solutions:
-      self._update_possible_values(row, col, c)
-    return solutions
+    for row, col, value in solution:
+      self._update_possible_values(row, col, value)
+    return solution
 
   def _full_solve(self):
     """Solving a sudoku combining fast approaches and guessing numbers.
@@ -192,18 +190,18 @@ class SudokuSolver:
       A solution as a list of moves with each move as a tuple of row, column and
         value, where value is a character between '1' and '9'.
     """
-    solutions = []
+    solution = []
     # Apply fast approaches.
     for _ in range(81):
-      fast_solutions = self._fast_solve()
-      if fast_solutions is None:
-        for row, col, _ in solutions:
+      fast_solution = self._fast_solve()
+      if fast_solution is None:
+        for row, col, _ in solution:
           self._sudoku.set(row, col, ' ')
         return None
-      elif not fast_solutions:
+      elif not fast_solution:
         break
       else:
-        solutions.extend(fast_solutions)
+        solution.extend(fast_solution)
 
     # Try it from the location where has the least number of possible values.
     for i in range(10):
@@ -237,19 +235,19 @@ class SudokuSolver:
             self._initialize_possible_locations()
           else:
             # Get a valid solution.
-            solutions.append((row, col, value))
-            solutions.extend(try_solutions)
+            solution.append((row, col, value))
+            solution.extend(try_solutions)
             break
         if try_solutions is None:
           # Can't find valid solution. Revert fast solutions.
-          for row, col, _ in solutions:
+          for row, col, _ in solution:
             self._sudoku.set(row, col, ' ')
             self._update_possible_values(row, col, value)
             self._initialize_possible_locations()
           return None
         break
       break
-    return solutions
+    return solution
 
   def _simple_solve(self):
     """Solve a sudoku with simple recursive algorithm.
