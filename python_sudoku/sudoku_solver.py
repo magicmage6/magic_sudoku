@@ -179,26 +179,35 @@ class SudokuSolver:
     move_set = set()
     # Fill in numbers in the location where only one value is possible.
     unique_group = self._location_groups[1]
+    conflict_found = False
     if unique_group:
       for row, col in unique_group:
         for value in self._possible_values[row][col]:
           move = (row, col, value)
           if move not in move_set:
-            move_set.add(move)
-            solution.append(move)
-            self._sudoku.set(row, col, value)
+            if self._sudoku.get(row, col) == ' ':
+              move_set.add(move)
+              solution.append(move)
+              self._sudoku.set(row, col, value)
+            else:
+              conflict_found = True
+              break
           break
 
     # Fill in the numbers in a region where only one location is possible.
     for (_, _, value), (row, col) in self._unique_locations.items():
       move = (row, col, value)
       if move not in move_set:
-        move_set.add(move)
-        solution.append(move)
-        self._sudoku.set(row, col, value)
+        if self._sudoku.get(row, col) == ' ':
+          move_set.add(move)
+          solution.append(move)
+          self._sudoku.set(row, col, value)
+        else:
+          conflict_found = True
+          break
 
     # Check if the sudoku is still valid after all the above changes.
-    if not self._sudoku.is_valid():
+    if conflict_found or not self._sudoku.is_valid():
       # Revert the changes.
       for row, col, value in solution:
         self._sudoku.set(row, col, ' ')
