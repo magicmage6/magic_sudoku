@@ -29,7 +29,7 @@ class SudokuSolver:
     self._unique_locations = {}
 
   def _get_region_keys(self, row, col, value):
-    """Get the key for the possible location dictionary for a parituclar location and value.
+    """Gets the key for the possible location dictionary that a particular location and value impacts.
 
     This function is used to help update the possible locations when a new number is filled in.
     """
@@ -47,9 +47,11 @@ class SudokuSolver:
     if value in self._possible_values[row][col]:
       orig_len = len(self._possible_values[row][col])
       self._possible_values[row][col].remove(value)
+      # Update the dictionary grouping the location by number of possible values.
       if (row, col) in self._location_groups[orig_len]:
         self._location_groups[orig_len].remove((row, col))
         self._location_groups[orig_len - 1].add((row, col))
+      # Update the possible locations for the regions this location impacts.
       for key in self._get_region_keys(row, col, value):
         if key in self._possible_locations:
           locations = self._possible_locations[key]
@@ -87,6 +89,7 @@ class SudokuSolver:
       for j in range(left, left + 3):
         if (i != row or j != col) and self._sudoku.get(i, j) == ' ':
           self._remove_possible_values(i, j, value)
+    # Remove possible locations as this location is filled in.
     for key in self._get_region_keys(row, col, value):
       if key in self._possible_locations:
         del self._possible_locations[key]
@@ -94,7 +97,7 @@ class SudokuSolver:
         del self._unique_locations[key]
 
   def _initialize_possible_values(self):
-    """Initialize possible values at every location."""
+    """Initializes possible values at every location."""
     self._possible_values = [[{}] * 9 for _ in range(9)]
     for i in range(9):
       for j in range(9):
@@ -116,7 +119,7 @@ class SudokuSolver:
           self._location_groups[len(self._possible_values[i][j])].add((i, j))
 
   def _initialize_possible_locations(self):
-    """Initialize the possible locations of a number in each region.
+    """Initializes the possible locations of a number in each region.
 
     A region is a row, column, or a box where each number 1-9 will appear once
     and only once.
@@ -135,12 +138,12 @@ class SudokuSolver:
           self._unique_locations[key] = location
   
   def _initialize_data(self):
-    """Initialize possible values and possible locations."""
+    """Initializes possible values and possible locations."""
     self._initialize_possible_values()
     self._initialize_possible_locations()
 
   def _fast_solve(self):
-    """Solving a sudoku with fast approaches.
+    """Solves a sudoku with fast approaches.
 
     This function mimics the common strategies that human uses to solve sudoku
     without guessing any numbers. It can solve many easy problems, but may not
@@ -186,7 +189,7 @@ class SudokuSolver:
     return solution
 
   def _full_solve(self):
-    """Solving a sudoku combining fast approaches and guessing numbers.
+    """Solves a sudoku combining fast approaches and guessing numbers.
 
     This function combines the common approaches that human uses with number
     guessing when those approaches are not able to solve the problems.
@@ -255,7 +258,7 @@ class SudokuSolver:
     return solution
 
   def _simple_solve(self):
-    """Solve a sudoku with simple recursive algorithm.
+    """Solves a sudoku with simple recursive algorithm.
 
     This function uses simple recursive algorithm without run time optimization.
     but it can still solve a sudoku within a second. It can be used for solving
