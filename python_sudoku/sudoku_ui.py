@@ -2,11 +2,13 @@
 
 import curses
 import sudoku_data
+import sudoku_generator
 import sudoku_solver
 
 _MENU = """
 q       Quit
 m       Show menu
+n       New sudoku
 Up      Cursor up
 Down    Cursor down
 Left    Cursor left
@@ -29,6 +31,7 @@ Any     Dismiss menu
 # change type.
 _NUMBER_CHANGE = 0
 _COLOR_CHANGE = 1
+_SUDOKU_CHANGE = 2
 
 
 class SudokuUI:
@@ -44,8 +47,10 @@ class SudokuUI:
     self.message = None
     self.mouse_x = None
     self.mouse_y = None
+    self.level = 0
     self.sudoku = sudoku_data.SudokuData()
     self.solver = sudoku_solver.SudokuSolver()
+    self.generator = sudoku_generator.SudokuGenerator()
     self._setup_colors()
     self.data_file = '/tmp/magic_sudoku.data'
     self.changes = []
@@ -238,6 +243,18 @@ class SudokuUI:
     self.curr_color = new_color
     self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
 
+  def _change_sudoku(self, new_sudoku):
+    """Change the current sudoku."""
+    original_sudoku = self.sudoku
+    original_colors = self.colors
+    original_curr_color = self.curr_color
+    self.colors = [[1] * 9 for _ in range(9)]
+    self.sudoku = new_sudoku
+    self.changes.append(
+        (_SUDOKU_CHANGE, ((original_sudoku, original_colors,
+                           original_curr_color), (self.sudoku, self.colors,
+                                                  self.curr_color))))
+
   def _process_key(self, key):
     """Process the key and mouse events."""
     if self.message:
@@ -249,7 +266,7 @@ class SudokuUI:
         self.height -= 9
         self.width -= 18
     elif key == ord('+'):
-      # Incresae size of the sudoku board.
+      # Increase size of the sudoku board.
       self.height += 9
       self.width += 18
     elif key == curses.KEY_DOWN:
@@ -294,6 +311,9 @@ class SudokuUI:
           break
       else:
         self.message = 'Not solvable'
+    elif key == ord('n'):
+      # Generates a new sudoku.
+      self._change_sudoku(self.generator.get_sudoku())
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
       self._change_color(self.curr_color + 1)
@@ -318,9 +338,14 @@ class SudokuUI:
           self.sudoku.set(row, col, original_value)
           self.curr_row = row
           self.curr_col = col
-        else:
+        elif change_type == _COLOR_CHANGE:
           original_color, _ = content
           self.curr_color = original_color
+        else:
+          (original_sudoku, original_colors, original_curr_color), _ = content
+          self.sudoku = original_sudoku
+          self.colors = original_colors
+          self.curr_color = original_curr_color
         del self.changes[-1]
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.

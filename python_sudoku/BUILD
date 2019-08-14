@@ -18,6 +18,7 @@ py_library(
     srcs = ["sudoku_ui.py"],
     deps = [
         ":sudoku_data",
+        ":sudoku_generator",
         ":sudoku_solver",
     ],
 )
