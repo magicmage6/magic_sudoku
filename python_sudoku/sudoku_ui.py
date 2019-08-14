@@ -18,6 +18,7 @@ Space   Erase a number
 s       Save
 l       Load
 c       Change color
+b       Change color back
 a       Auto solve
 h       Hint
 u       Undo changes
@@ -230,10 +231,10 @@ class SudokuUI:
     else:
       curses.beep()
 
-  def _change_color(self):
+  def _change_color(self, new_color):
     """Change the current color."""
     original_color = self.curr_color
-    new_color = (self.curr_color + 1) % self.num_colors
+    new_color = (new_color - 1) % self.num_colors + 1
     self.curr_color = new_color
     self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
 
@@ -275,9 +276,11 @@ class SudokuUI:
       clone.copy(self.sudoku)
       solution = self.solver.solve(clone)
       if solution:
-        self._change_color()
+        self._change_color(self.curr_color + 1)
         for row, col, value in solution:
           self._change_number(row, col, value)
+      else:
+        self.message = 'Not solvable'
     elif key == ord('h'):
       # Give hint of the next move.
       clone = sudoku_data.SudokuData()
@@ -289,12 +292,14 @@ class SudokuUI:
         for row, col, value in solution:
           self._change_number(row, col, value)
           break
+      else:
+        self.message = 'Not solvable'
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
-      original_color = self.curr_color
-      new_color = (self.curr_color + 1) % self.num_colors
-      self.curr_color = new_color
-      self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
+      self._change_color(self.curr_color + 1)
+    elif key == ord('b'):
+      # Change current color to previous one.
+      self._change_color(self.curr_color - 1)
     elif key == ord('s'):
       # Save sudoku to the data file.
       self._save()
