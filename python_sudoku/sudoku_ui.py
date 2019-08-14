@@ -4,17 +4,26 @@ import curses
 import sudoku_data
 import sudoku_solver
 
-_MENU = [
-    ' q       Quit             ', ' m       Show menu        ',
-    ' Up      Cursor up        ', ' Down    Cursor down      ',
-    ' Left    Cursor left      ', ' Right   Cursor right     ',
-    ' 1 - 9   Fill in a number ', ' Space   Remove a number  ',
-    ' +       Increase size    ', ' -       Decrease size    ',
-    ' s       Save             ', ' l       Load             ',
-    ' c       Change color     ', ' a       Auto solve       ',
-    ' h       Hint             ', ' u       Undo changes     ',
-    ' Mouse   Move cursor      ', ' Any     Dismiss menu     '
-]
+_MENU = """
+q       Quit
+m       Show menu
+Up      Cursor up
+Down    Cursor down
+Left    Cursor left
+Right   Cursor right
+1 - 9   Fill in a number
+Space   Erase a number
++       Increase size
+-       Decrease size
+s       Save
+l       Load
+c       Change color
+a       Auto solve
+h       Hint
+u       Undo changes
+Mouse   Move cursor
+Any     Dismiss menu
+"""
 
 # change type.
 _NUMBER_CHANGE = 0
@@ -31,7 +40,7 @@ class SudokuUI:
     self.curr_row = 4
     self.curr_col = 4
     self.curr_color = 1
-    self.show_menu = False
+    self.message = None
     self.mouse_x = None
     self.mouse_y = None
     self.sudoku = sudoku_data.SudokuData()
@@ -192,16 +201,21 @@ class SudokuUI:
         int(left + (self.curr_col + 0.5) * delta_x))
 
     self.stdscr.refresh()
-    if self.show_menu:
-      menu_width = max([len(m) for m in _MENU])
-      menu_height = len(_MENU)
-      menu_left = int(round((max_x - menu_width) / 2))
-      menu_up = int(round((max_y - menu_height) / 2))
-      menu = curses.newwin(menu_height, menu_width + 1, menu_up, menu_left)
-      for i in range(menu_height):
-        menu.addstr(i, 0, _MENU[i], curses.A_REVERSE)
+    if self.message:
+      message_lines = self.message.strip().split('\n')
+      message_width = max([len(m) for m in message_lines]) + 2
+      message_height = len(message_lines)
+      window_left = int(round((max_x - message_width) / 2))
+      window_up = int(round((max_y - message_height) / 2))
+      message_window = curses.newwin(message_height, message_width + 1,
+                                     window_up, window_left)
+      for i in range(message_height):
+        line = message_lines[i]
+        padded_line = ' {}{}'.format(line,
+                                     ' ' * (message_width - len(line) - 1))
+        message_window.addstr(i, 0, padded_line, curses.A_REVERSE)
       curses.curs_set(0)
-      menu.refresh()
+      message_window.refresh()
 
   def _change_number(self, row, col, new_value):
     """Change a number in a location."""
@@ -225,8 +239,8 @@ class SudokuUI:
 
   def _process_key(self, key):
     """Process the key and mouse events."""
-    if self.show_menu:
-      self.show_menu = False
+    if self.message:
+      self.message = None
       curses.curs_set(1)
     elif key == ord('-'):
       # Reduce size of the sudoku board.
@@ -289,7 +303,7 @@ class SudokuUI:
       self._load()
     elif key == ord('m'):
       # Show or hide menu.
-      self.show_menu = True
+      self.message = _MENU
     elif key == ord('u'):
       # Undo changes.
       if self.changes:
