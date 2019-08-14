@@ -5,14 +5,14 @@ import sudoku_data
 import sudoku_solver
 
 _MENU = [
-    'q       Quit            ', 'm       Show menu       ',
-    'Up      Cursor up       ', 'Down    Cursor down     ',
-    'Left    Cursor left     ', 'Right   Cursor right    ',
-    '1 - 9   Fill in a number', 'Space   Remove a number ',
-    '+       Increase size   ', '-       Decrease size   ',
-    's       Save            ', 'l       Load            ',
-    'c       Change color    ', 'a       Auto solve      ',
-    'Mouse   Move cursor     ', 'Any     Dismiss menu    '
+    ' q       Quit             ', ' m       Show menu        ',
+    ' Up      Cursor up        ', ' Down    Cursor down      ',
+    ' Left    Cursor left      ', ' Right   Cursor right     ',
+    ' 1 - 9   Fill in a number ', ' Space   Remove a number  ',
+    ' +       Increase size    ', ' -       Decrease size    ',
+    ' s       Save             ', ' l       Load             ',
+    ' c       Change color     ', ' a       Auto solve       ',
+    ' Mouse   Move cursor      ', ' Any     Dismiss menu     '
 ]
 
 
