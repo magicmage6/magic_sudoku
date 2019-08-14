@@ -227,10 +227,15 @@ class SudokuUI:
 
   def _change_number(self, row, col, new_value):
     """Change a number in a location."""
+    original_value = self.sudoku.get(row, col)
+    if new_value == original_value:
+      return
+    if original_value != ' ' and self.colors[row][col] == 0:
+      self.message = 'Can not change fixed number'
+      return
     if self.sudoku.is_valid_value(row, col, new_value):
       self.curr_row = row
       self.curr_col = col
-      original_value = self.sudoku.get(self.curr_row, self.curr_col)
       self.sudoku.set(self.curr_row, self.curr_col, new_value)
       self.colors[self.curr_row][self.curr_col] = self.curr_color
       self.changes.append((_NUMBER_CHANGE, (self.curr_row, self.curr_col,
