@@ -12,6 +12,7 @@ _MENU = [
     ' +       Increase size    ', ' -       Decrease size    ',
     ' s       Save             ', ' l       Load             ',
     ' c       Change color     ', ' a       Auto solve       ',
+    ' h       Hint             ',
     ' Mouse   Move cursor      ', ' Any     Dismiss menu     '
 ]
 
@@ -237,6 +238,18 @@ class SudokuUI:
         for row, col, value in solution:
           self.sudoku.set(row, col, value)
           self.colors[row][col] = self.curr_color
+    elif key == ord('h'):
+      # Give hint of the next move.
+      solution = self.solver.solve(self.sudoku, partial=True)
+      if not solution:
+        solution = self.solver.solve(self.sudoku)
+      if solution:
+        for row, col, value in solution:
+          self.sudoku.set(row, col, value)
+          self.colors[row][col] = self.curr_color
+          self.curr_row = row
+          self.curr_col = col
+          break
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
       self.curr_color = (self.curr_color + 1) % self.num_colors
