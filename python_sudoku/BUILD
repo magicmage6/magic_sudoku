@@ -32,6 +32,16 @@ py_binary(
 )
 
 py_binary(
+    name = "generator_test",
+    srcs = ["generator_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":sudoku_data",
+        ":sudoku_solver",
+    ],
+)
+
+py_binary(
     name = "solver_test",
     srcs = ["solver_test.py"],
     data = glob(
