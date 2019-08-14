@@ -135,10 +135,14 @@ class SudokuSolver:
           self._unique_locations[key] = c
 
   def _fast_solve(self):
-    """Solving it with fast approaches.
+    """Solving a sudoku with fast approaches.
+
+    This function mimic the common strategies that human uses to solve sudoku
+    without guessing any numbers. It can solve many easy problems, but may not
+    be able to solve difficult problems.
 
     Returns:
-      A list of solutions with each solution as a tuple of row, column and
+      A solution as a list of moves with each move as a tuple of row, column and
         value, where value is a character between '1' and '9'.
     """
     # If some location can't have any possible values, there is not solution.
@@ -178,8 +182,18 @@ class SudokuSolver:
       self._update_possible_values(row, col, c)
     return solutions
 
-  def _recursive_solve(self):
+  def _full_solve(self):
+    """Solving a sudoku combining fast approaches and guessing numbers.
+
+    This function combines the common approaches that human uses with number
+    guessing when those approaches are not able to solve the problems.
+
+    Returns:
+      A solution as a list of moves with each move as a tuple of row, column and
+        value, where value is a character between '1' and '9'.
+    """
     solutions = []
+    # Apply fast approaches.
     for _ in range(81):
       fast_solutions = self._fast_solve()
       if fast_solutions is None:
@@ -191,13 +205,14 @@ class SudokuSolver:
       else:
         solutions.extend(fast_solutions)
 
-    # Try it from the locatin where has the least possible values.
+    # Try it from the location where has the least number of possible values.
     for i in range(10):
       group = self._location_groups[i]
       if not group:
         continue
       for row, col in group:
-        # This is the location with least possible values, try it here.
+        # This is the location with the least number of possible values, try it
+        # here.
         possible_values = list(self._possible_values[row][col])
         randomized_values = []
         nr_values = len(possible_values)
@@ -214,7 +229,7 @@ class SudokuSolver:
         for value in randomized_values:
           self._sudoku.set(row, col, value)
           self._update_possible_values(row, col, value)
-          try_solutions = self._recursive_solve()
+          try_solutions = self._full_solve()
           if try_solutions is None:
             # Fail to get valid solution, rever the try.
             self._sudoku.set(row, col, ' ')
@@ -236,7 +251,14 @@ class SudokuSolver:
       break
     return solutions
 
-  def simple_solve(self):
+  def _simple_solve(self):
+    """Solve a sudoku with simple recursive algorithm.
+
+    This function uses simple recursive algorithm without run time optimization.
+    but it can still solve a sudoku within a second. It can be used for solving
+    a single sudoku, but will be too slow for solving a lot of sudokus or
+    generating a lot of random sudoku problems.
+    """
     if not self._sudoku.is_valid():
       return None
     solution = []
@@ -253,7 +275,7 @@ class SudokuSolver:
           try_solution = None
           for value in possible_values:
             self._sudoku.set(row, col, value)
-            try_solution = self.simple_solve()
+            try_solution = self._simple_solve()
             if try_solution is None:
               self._sudoku.set(row, col, ' ')
             else:
@@ -265,20 +287,21 @@ class SudokuSolver:
           return solution
     return solution
 
-  def solve(self, fast_solve=False, simple=False):
+  def solve(self, fast=False, simple=False):
     """Solves a sudoku.
 
     Args:
-      fast_solve: If true, use fast solver, otherwise use full solver.
+      simple: If true, use simple solver, otherwise use other solvers.
+      fast: If true, use fast solver, otherwise use full solver.
 
     Returns:
       A list of solutions with each solution as a tuple of row, column and
         value, where value is a character between '1' and '9'.
     """
     if simple:
-      return self.simple_solve()
+      return self._simple_solve()
     self._initialize_possible_values()
     self._initialize_possible_locations()
-    if fast_solve:
+    if fast:
       return self._fast_solve()
-    return self._recursive_solve()
+    return self._full_solve()

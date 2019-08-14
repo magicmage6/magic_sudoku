@@ -47,13 +47,14 @@ def compare_sudoku(file_name, sudoku, original, solution):
         raise ValueError('Testing failed.')
 
 
-def test_solver(path, fast_solve=False):
+def test_solver(path, fast=False, simple=False):
   for file_name in os.listdir(path):
     full_name = os.path.join(path, file_name)
     sudoku, expected_solution = read_data_file(full_name)
     original = sudoku_data.SudokuData()
     original.copy(sudoku)
-    solution = sudoku_solver.SudokuSolver(sudoku).solve(fast_solve=fast_solve)
+    solution = sudoku_solver.SudokuSolver(sudoku).solve(
+        fast=fast, simple=simple)
     compare_solutions(full_name, solution, expected_solution)
     if solution is not None:
       compare_sudoku(full_name, sudoku, original, solution)
@@ -66,8 +67,9 @@ def main():
     data_path = 'test_data'
     if not os.path.exists(data_path):
       raise RuntimeError('No test_data directory found.')
-  test_solver(os.path.join(data_path, 'fast_solver'), fast_solve=True)
+  test_solver(os.path.join(data_path, 'fast_solver'), fast=True)
   test_solver(os.path.join(data_path, 'full_solver'))
+  test_solver(os.path.join(data_path, 'simple_solver'), simple=True)
   print('Tests passed.')
 
 
