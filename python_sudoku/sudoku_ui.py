@@ -30,7 +30,7 @@ class SudokuUI:
     self.mouse_x = None
     self.mouse_y = None
     self.sudoku = sudoku_data.SudokuData()
-    self.solver = sudoku_solver.SudokuSolver(self.sudoku)
+    self.solver = sudoku_solver.SudokuSolver()
     self._setup_colors()
     self.data_file = '/tmp/magic_sudoku.data'
 
@@ -231,7 +231,12 @@ class SudokuUI:
         curses.beep()
     elif key == ord('a'):
       # Automatcially solve the sudoku.
-      self.solver.solve()
+      solution = self.solver.solve(self.sudoku)
+      if solution:
+        self.curr_color = (self.curr_color + 1) % self.num_colors
+        for row, col, value in solution:
+          self.sudoku.set(row, col, value)
+          self.colors[row][col] = self.curr_color
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
       self.curr_color = (self.curr_color + 1) % self.num_colors

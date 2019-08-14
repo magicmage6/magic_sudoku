@@ -2,6 +2,7 @@
 
 import copy
 import random
+import sudoku_data
 
 # A region is a row, column, or a box where each number 1-9 will appear once and
 # only once.
@@ -16,8 +17,8 @@ _BOX_REGION = 2
 class SudokuSolver:
   """Class for sudoku solver."""
 
-  def __init__(self, sudoku):
-    self._sudoku = sudoku
+  def __init__(self):
+    self._sudoku = sudoku_data.SudokuData()
     self._possible_values = [[{}] * 9 for _ in range(9)]
     # A list grouping locations by the number of possible values.
     self._location_groups = [{}] * 10
@@ -297,10 +298,11 @@ class SudokuSolver:
           return solution
     return solution
 
-  def solve(self, partial=False, simple=False):
+  def solve(self, sudoku, partial=False, simple=False):
     """Solves a sudoku.
 
     Args:
+      sudoku: A sudoku to solve. An object of sudoku_data.SudokuData.
       simple: If true, use simple solver, otherwise use other solvers.
       partial: If true, use partial solver, otherwise use fast solver.
 
@@ -309,6 +311,7 @@ class SudokuSolver:
         value, where value is a character between '1' and '9'. Returns None
         if the sudoku is not solvable.
     """
+    self._sudoku.copy(sudoku)
     if simple:
       return self._simple_solve()
     self._initialize_data()
