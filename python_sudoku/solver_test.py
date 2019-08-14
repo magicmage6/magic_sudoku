@@ -35,7 +35,10 @@ def compare_solutions(file_name, solutions, expected_solutions):
     raise RuntimeError('Testing failed.')
 
 
-def compare_sudoku(file_name, sudoku, original):
+def compare_sudoku(file_name, sudoku, original, solution):
+  if solution:
+    for row, col, value in solution:
+      original.set(row, col, value)
   for row in range(9):
     for col in range(9):
       if sudoku.get(row, col) != original.get(row, col):
@@ -60,10 +63,10 @@ def test_solver(path, type):
     sudoku, expected_solution = read_data_file(full_name)
     original = sudoku_data.SudokuData()
     original.copy(sudoku)
-    solution = sudoku_solver.SudokuSolver().solve(sudoku,
-       partial=partial, simple=simple)
+    solution = sudoku_solver.SudokuSolver().solve(
+        sudoku, partial=partial, simple=simple)
     compare_solutions(full_name, solution, expected_solution)
-    compare_sudoku(full_name, sudoku, original)
+    compare_sudoku(full_name, sudoku, original, solution)
   print('Tests in {!r} with type {!r} passed.'.format(path, type))
 
 

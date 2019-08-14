@@ -48,7 +48,8 @@ class SudokuSolver:
   def _get_region_keys(self, row, col, value):
     """Gets the key for the possible location dictionary that a particular location and value impacts.
 
-    This function is used to help update the possible locations when a new number is filled in.
+    This function is used to help update the possible locations when a new
+    number is filled in.
     """
     return [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
             (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
@@ -153,7 +154,7 @@ class SudokuSolver:
       if len(possible_locations) == 1:
         for location in possible_locations:
           self._unique_locations[key] = location
-  
+
   def _initialize_data(self):
     """Initializes possible values and possible locations."""
     self._initialize_possible_values()
@@ -326,7 +327,7 @@ class SudokuSolver:
         value, where value is a character between '1' and '9'. Returns None
         if the sudoku is not solvable.
     """
-    self._sudoku.copy(sudoku)
+    self._sudoku = sudoku
     if simple:
       return self._simple_solve()
     self._initialize_data()

@@ -4,6 +4,11 @@ py_library(
 )
 
 py_library(
+    name = "sudoku_generator",
+    srcs = ["sudoku_generator.py"],
+)
+
+py_library(
     name = "sudoku_solver",
     srcs = ["sudoku_solver.py"],
 )

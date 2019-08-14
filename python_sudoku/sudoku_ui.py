@@ -203,6 +203,26 @@ class SudokuUI:
       curses.curs_set(0)
       menu.refresh()
 
+  def _change_number(self, row, col, new_value):
+    """Change a number in a location."""
+    if self.sudoku.is_valid_value(row, col, new_value):
+      self.curr_row = row
+      self.curr_col = col
+      original_value = self.sudoku.get(self.curr_row, self.curr_col)
+      self.sudoku.set(self.curr_row, self.curr_col, new_value)
+      self.colors[self.curr_row][self.curr_col] = self.curr_color
+      self.changes.append((_NUMBER_CHANGE, (self.curr_row, self.curr_col,
+                                            original_value, new_value)))
+    else:
+      curses.beep()
+
+  def _change_color(self):
+    """Change the current color."""
+    original_color = self.curr_color
+    new_color = (self.curr_color + 1) % self.num_colors
+    self.curr_color = new_color
+    self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
+
   def _process_key(self, key):
     """Process the key and mouse events."""
     if self.show_menu:
@@ -237,23 +257,23 @@ class SudokuUI:
         curses.beep()
     elif key == ord('a'):
       # Automatcially solve the sudoku.
-      solution = self.solver.solve(self.sudoku)
+      clone = sudoku_data.SudokuData()
+      clone.copy(self.sudoku)
+      solution = self.solver.solve(clone)
       if solution:
-        self.curr_color = (self.curr_color + 1) % self.num_colors
+        self._change_color()
         for row, col, value in solution:
-          self.sudoku.set(row, col, value)
-          self.colors[row][col] = self.curr_color
+          self._change_number(row, col, value)
     elif key == ord('h'):
       # Give hint of the next move.
-      solution = self.solver.solve(self.sudoku, partial=True)
+      clone = sudoku_data.SudokuData()
+      clone.copy(self.sudoku)
+      solution = self.solver.solve(clone, partial=True)
       if not solution:
-        solution = self.solver.solve(self.sudoku)
+        solution = self.solver.solve(clone)
       if solution:
         for row, col, value in solution:
-          self.sudoku.set(row, col, value)
-          self.colors[row][col] = self.curr_color
-          self.curr_row = row
-          self.curr_col = col
+          self._change_number(row, col, value)
           break
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
@@ -273,8 +293,8 @@ class SudokuUI:
     elif key == ord('u'):
       # Undo changes.
       if self.changes:
-        type, content = self.changes[-1]
-        if type == _NUMBER_CHANGE:
+        change_type, content = self.changes[-1]
+        if change_type == _NUMBER_CHANGE:
           row, col, original_value, _ = content
           self.sudoku.set(row, col, original_value)
           self.curr_row = row
@@ -285,14 +305,7 @@ class SudokuUI:
         del self.changes[-1]
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
-      new_value = chr(key)
-      if self.sudoku.is_valid_value(self.curr_row, self.curr_col, new_value):
-        original_value = self.sudoku.get(self.curr_row, self.curr_col)
-        self.sudoku.set(self.curr_row, self.curr_col, new_value)
-        self.colors[self.curr_row][self.curr_col] = self.curr_color
-        self.changes.append((_NUMBER_CHANGE, (self.curr_row, self.curr_col, original_value, new_value)))
-      else:
-        curses.beep()
+      self._change_number(self.curr_row, self.curr_col, chr(key))
 
   def run(self):
     """Run sudoku UI."""
