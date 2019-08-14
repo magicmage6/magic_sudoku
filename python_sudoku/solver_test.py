@@ -64,7 +64,7 @@ def test_solver(path, type):
        partial=partial, simple=simple)
     compare_solutions(full_name, solution, expected_solution)
     compare_sudoku(full_name, sudoku, original)
-  print('Tests in {} with type {} passed.'.format(path, type))
+  print('Tests in {!r} with type {!r} passed.'.format(path, type))
 
 
 def main():
