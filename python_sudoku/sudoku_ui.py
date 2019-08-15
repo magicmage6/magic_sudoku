@@ -28,9 +28,12 @@ Any     Dismiss menu
 """
 
 # change type.
-_NUMBER_CHANGE = 0
-_COLOR_CHANGE = 1
-_SUDOKU_CHANGE = 2
+_NUMBER_CHANGE = 1
+_COLOR_CHANGE = 2
+_SUDOKU_CHANGE = 3
+
+# Confirmation type
+_NEW_SUDOKU_CONFIRM = 1
 
 
 class SudokuUI:
@@ -44,6 +47,7 @@ class SudokuUI:
     self.curr_col = 4
     self.curr_color = 1
     self.message = None
+    self.confirm = None
     self.mouse_x = None
     self.mouse_y = None
     self.level = 0
@@ -274,6 +278,10 @@ class SudokuUI:
     if self.message:
       self.message = None
       curses.curs_set(1)
+      if self.confirm is not None and (key == ord('y') or key == ord('Y')):
+        if self.confirm == _NEW_SUDOKU_CONFIRM:
+          self._change_sudoku(self.generator.get_sudoku())
+          self.confirm = None
     elif key == ord('-'):
       # Reduce size of the sudoku board.
       if self.height > 18:
@@ -327,7 +335,8 @@ class SudokuUI:
         self.message = 'Not solvable'
     elif key == ord('n'):
       # Generates a new sudoku.
-      self._change_sudoku(self.generator.get_sudoku())
+      self.message = 'A new sudoku? (Y/N)'
+      self.confirm = _NEW_SUDOKU_CONFIRM
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
       self._change_color(self.curr_color + 1)
