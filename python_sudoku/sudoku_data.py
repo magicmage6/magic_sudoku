@@ -63,6 +63,14 @@ class SudokuData:
           box.extend([(row, col) for col in range(left, left + 3)])
         self._regions.append(box)
 
+  def is_solved(self):
+    """Check if this sudoku is already solved."""
+    for row in range(9):
+      for col in range(9):
+        if self.data[row][col] == ' ':
+          return False
+    return self.is_valid()
+
   def is_valid(self):
     """Check if this is valid sudoku.
 

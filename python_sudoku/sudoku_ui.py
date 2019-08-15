@@ -37,6 +37,14 @@ A new sudoku?
 Other   Back
 """
 
+_WIN_MSG = """
+**********************
+*                    *
+*  Congratulations!  *
+*                    *
+**********************
+"""
+
 # change type.
 _NUMBER_CHANGE = 1
 _COLOR_CHANGE = 2
@@ -391,6 +399,8 @@ class SudokuUI:
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
       self._change_number(self.curr_row, self.curr_col, chr(key))
+      if self.sudoku.is_solved():
+        self.message = _WIN_MSG
 
   def _initialize_sudoku(self):
     self.data_file = '/tmp/.magic_sudoku_autosave.data'
