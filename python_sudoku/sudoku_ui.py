@@ -29,6 +29,7 @@ Any     Dismiss menu
 
 _NEW_SUDOKU_MSG = """
 A new sudoku?
+0       Empty
 1       Easy
 2       Medium
 3       Hard
@@ -259,7 +260,7 @@ class SudokuUI:
                                             original_value, new_value)))
       self._auto_save()
     else:
-      curses.beep()
+      self.message = '{} is not valid here'.format(new_value)
 
   def _change_color(self, new_color):
     """Change the current color."""
@@ -289,7 +290,9 @@ class SudokuUI:
       curses.curs_set(1)
       if self.confirm is not None:
         if self.confirm == _NEW_SUDOKU_CONFIRM:
-          if key == ord('1'):
+          if key == ord('0'):
+            self.level = 'Easy'
+          elif key == ord('1'):
             self.level = 'Easy'
           elif key == ord('2'):
             self.level = 'Medium'
@@ -297,7 +300,10 @@ class SudokuUI:
             self.level = 'Hard'
           elif key == ord('4'):
             self.level = 'Challenger'
-          self._change_sudoku(self.generator.get_sudoku(level=self.level))
+          if key == ord('0'):
+            self._change_sudoku(sudoku_data.SudokuData())
+          else:
+            self._change_sudoku(self.generator.get_sudoku(level=self.level))
           self.confirm = None
     elif key == ord('-'):
       # Reduce size of the sudoku board.
