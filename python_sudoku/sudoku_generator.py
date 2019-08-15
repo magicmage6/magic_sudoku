@@ -22,6 +22,7 @@ class SudokuGenerator:
     solver = sudoku_solver.SudokuSolver()
     sudoku = sudoku_data.SudokuData()
     solver.solve(sudoku)
+    level = level.upper()
     if level not in _NR_SPACES_DICT:
       raise ValueError('Level {} is not valid. Valid levels are {}.'.format(
           level, _NR_SPACES_DICT.keys()))
