@@ -27,6 +27,15 @@ Mouse   Move cursor
 Any     Dismiss menu
 """
 
+_NEW_SUDOKU_MSG = """
+A new sudoku?
+1       Easy
+2       Medium
+3       Hard
+4       Challenger
+Other   Back
+"""
+
 # change type.
 _NUMBER_CHANGE = 1
 _COLOR_CHANGE = 2
@@ -50,7 +59,7 @@ class SudokuUI:
     self.confirm = None
     self.mouse_x = None
     self.mouse_y = None
-    self.level = 0
+    self.level = 'Easy'
     self.sudoku = sudoku_data.SudokuData()
     self.solver = sudoku_solver.SudokuSolver()
     self.generator = sudoku_generator.SudokuGenerator()
@@ -278,9 +287,17 @@ class SudokuUI:
     if self.message:
       self.message = None
       curses.curs_set(1)
-      if self.confirm is not None and (key == ord('y') or key == ord('Y')):
+      if self.confirm is not None:
         if self.confirm == _NEW_SUDOKU_CONFIRM:
-          self._change_sudoku(self.generator.get_sudoku())
+          if key == ord('1'):
+            self.level = 'Easy'
+          elif key == ord('2'):
+            self.level = 'Medium'
+          elif key == ord('3'):
+            self.level = 'Hard'
+          elif key == ord('4'):
+            self.level = 'Challenger'
+          self._change_sudoku(self.generator.get_sudoku(level=self.level))
           self.confirm = None
     elif key == ord('-'):
       # Reduce size of the sudoku board.
@@ -335,7 +352,7 @@ class SudokuUI:
         self.message = 'Not solvable'
     elif key == ord('n'):
       # Generates a new sudoku.
-      self.message = 'A new sudoku? (Y/N)'
+      self.message = _NEW_SUDOKU_MSG
       self.confirm = _NEW_SUDOKU_CONFIRM
     elif key == ord('c'):
       # Change current color use for new numbers fill in the board.
