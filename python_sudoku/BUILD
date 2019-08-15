@@ -32,17 +32,16 @@ py_binary(
     ],
 )
 
-py_binary(
+py_library(
     name = "generator_test",
     srcs = ["generator_test.py"],
-    python_version = "PY3",
     deps = [
         ":sudoku_data",
         ":sudoku_solver",
     ],
 )
 
-py_binary(
+py_library(
     name = "solver_test",
     srcs = ["solver_test.py"],
     data = glob(
@@ -51,9 +50,18 @@ py_binary(
             "test_data/full/*.data",
         ],
     ),
-    python_version = "PY3",
     deps = [
         ":sudoku_data",
         ":sudoku_solver",
+    ],
+)
+
+py_binary(
+    name = "sudoku_test",
+    srcs = ["sudoku_test.py"],
+    python_version = "PY3",
+    deps = [
+        ":generator_test",
+        ":solver_test",
     ],
 )

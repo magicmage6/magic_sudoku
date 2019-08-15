@@ -22,13 +22,9 @@ def test_generator(level, nr_tests):
   print('Tests passed for {} level.'.format(level))
 
 
-def main():
+def test_generators():
   test_generator('EASY', 100)
   test_generator('MEDIUM', 100)
   test_generator('HARD', 100)
   test_generator('CHALLENGER', 100)
   print('Tests passed.')
-
-
-if __name__ == '__main__':
-  main()

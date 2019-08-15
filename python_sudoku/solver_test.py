@@ -70,7 +70,7 @@ def test_solver(path, type):
   print('Tests in {!r} with type {!r} passed.'.format(path, type))
 
 
-def main():
+def test_solvers():
   data_path = 'python_sudoku/test_data'
   if not os.path.exists(data_path):
     data_path = 'test_data'
@@ -80,7 +80,3 @@ def main():
   test_solver(os.path.join(data_path, 'full'), 'fast')
   test_solver(os.path.join(data_path, 'full'), 'simple')
   print('Tests passed.')
-
-
-if __name__ == '__main__':
-  main()
