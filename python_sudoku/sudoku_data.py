@@ -26,6 +26,14 @@ class SudokuData:
         raise RuntimeError('The line does not contain 9 values. {}'.format(
             lines[i]))
 
+  def is_same(self, other):
+    """If they are the same sudoku."""
+    for row in range(9):
+      for col in range(9):
+        if self.data[row][col] != other.data[row][col]:
+          return False
+    return True
+
   def copy(self, other):
     """Copy another sudoku."""
     for row in range(9):

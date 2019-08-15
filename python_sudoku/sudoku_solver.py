@@ -33,7 +33,7 @@ def _get_randomized_list(data):
 class SudokuSolver:
   """Class for sudoku solver."""
 
-  def __init__(self):
+  def __init__(self, randomize_type='random'):
     self._sudoku = sudoku_data.SudokuData()
     self._possible_values = [[{}] * 9 for _ in range(9)]
     # A list grouping locations by the number of possible values.
@@ -44,6 +44,8 @@ class SudokuSolver:
     # The key is a tupe of the region type, region number, the value (number),
     # and the value is the only possible location.
     self._unique_locations = {}
+    # Type of ranomizing, can be random, min or max.
+    self.randomize_type = randomize_type
 
   def _get_region_keys(self, row, col, value):
     """Gets the key for the possible location dictionary that a particular location and value impacts.
@@ -251,7 +253,14 @@ class SudokuSolver:
       for row, col in group:
         # This is the location with the least number of possible values, try it
         # here.
-        possible_values = _get_randomized_list(self._possible_values[row][col])
+        possible_values = list(self._possible_values[row][col])
+        if self.randomize_type == 'min':
+          possible_values = sorted(possible_values)
+        elif self.randomize_type == 'max':
+          possible_values = sorted(possible_values)
+          possible_values.reverse()
+        else:
+          possible_values = _get_randomized_list(possible_values)
         try_solution = None
         # Try for every possible values.
         for value in possible_values:

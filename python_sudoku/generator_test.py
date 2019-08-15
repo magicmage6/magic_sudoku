@@ -24,7 +24,7 @@ def test_generator(level, nr_tests):
 
 def test_generators():
   test_generator('EASY', 100)
-  test_generator('MEDIUM', 100)
-  test_generator('HARD', 100)
-  test_generator('CHALLENGER', 100)
+  test_generator('MEDIUM', 50)
+  test_generator('HARD', 10)
+  test_generator('CHALLENGER', 10)
   print('Tests passed.')
