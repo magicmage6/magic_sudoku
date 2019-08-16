@@ -56,8 +56,12 @@ class SudokuGenerator:
     self._min_solver.solve(clone2)
     return clone1.is_same(clone2)
 
-  def _calcuate_sudoku(self):
-    """Gets a new sudoku and add it to the correct level."""
+  def generate_sudoku(self):
+    """Generates a new sudoku and add it to the correct level."""
+    min_nr_sudoku = min([len(sudoku) for sudoku in self._sudoku_map.values()])
+    # We already have enough sudoku in the cache.
+    if min_nr_sudoku > 10:
+      return
     nr_spaces = 56
     sudoku = sudoku_data.SudokuData()
     self._solver.solve(sudoku)
@@ -97,10 +101,10 @@ class SudokuGenerator:
     level = level.upper()
     if level not in {'EASY', 'MEDIUM', 'HARD', 'CHALLENGER'}:
       raise ValueError('Level {} is not valid.'.format(level))
-    for _ in range(5):
-      self._calcuate_sudoku()
+    for _ in range(2):
+      self.generate_sudoku()
     for _ in range(100):
-      self._calcuate_sudoku()
+      self.generate_sudoku()
       sudoku_list = self._sudoku_map[level]
       if sudoku_list:
         sudoku = sudoku_list[-1]
