@@ -439,6 +439,10 @@ class SudokuUI:
     while key != ord('q'):
       self._process_key(key)
       self._draw_board()
+      # Generates a sudoku every turn in the background
+      # and cache them to make it faster when a new sudoku
+      # is really needed.
+      self.generator.generate_sudoku()
       # Get the input key.
       key = self.stdscr.getch()
 
