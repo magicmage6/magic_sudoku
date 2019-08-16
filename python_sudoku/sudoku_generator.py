@@ -80,17 +80,25 @@ class SudokuGenerator:
     solution = self._solver.solve(clone)
     nr_missing = len(solution)
     curr_level = 'EASY'
-    if not self.is_partial_solvable(sudoku) or nr_missing > 51:
+    if not self.is_partial_solvable(sudoku) or nr_missing > 53:
       curr_level = 'CHALLENGER'
-    elif nr_missing <= 45:
+    elif nr_missing <= 47:
       curr_level = 'EASY'
-    elif nr_missing <= 48:
+    elif nr_missing <= 50:
       curr_level = 'MEDIUM'
     else:
       curr_level = 'HARD'
     sudoku_list = self._sudoku_map[curr_level]
     if len(sudoku_list) < 100:
       sudoku_list.append(sudoku)
+
+  def _get_sudoku_with_level(self, level):
+    sudoku_list = self._sudoku_map[level]
+    if not sudoku_list:
+      return None
+    sudoku = sudoku_list[-1]
+    del sudoku_list[-1]
+    return sudoku
 
   def get_sudoku(self, level='EASY'):
     """Generates a random sudoku problem.
@@ -101,13 +109,20 @@ class SudokuGenerator:
     level = level.upper()
     if level not in {'EASY', 'MEDIUM', 'HARD', 'CHALLENGER'}:
       raise ValueError('Level {} is not valid.'.format(level))
+    # Always generates two sudokus for reserves.
     for _ in range(2):
       self.generate_sudoku()
+    sudoku = None
     for _ in range(100):
       self.generate_sudoku()
-      sudoku_list = self._sudoku_map[level]
-      if sudoku_list:
-        sudoku = sudoku_list[-1]
-        del sudoku_list[-1]
+      sudoku = self._get_sudoku_with_level(level)
+      if sudoku:
         break
+    if not sudoku:
+      # If can't get a sudoku with the correct level, just return
+      # a sudoku with any level.
+      for curr_level, sudoku_list in self._sudoku_map.items():
+        if sudoku_list:
+          sudoku = self._get_sudoku_with_level(curr_level)
+          break
     return sudoku

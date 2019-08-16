@@ -22,7 +22,7 @@ def test_generators():
   for _ in range(10):
     test_generator(generator, 'HARD')
   print('Tests for HARD level passed.')
-  for _ in range(5):
+  for _ in range(10):
     test_generator(generator, 'CHALLENGER')
   print('Tests for CHALLENGER level passed.')
   print('All tests passed.')
