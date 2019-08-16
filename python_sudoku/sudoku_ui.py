@@ -92,6 +92,7 @@ class SudokuUI:
     self.colors = [[0] * 9 for _ in range(9)]
 
   def _save(self, file_name):
+    """Save sudoku to a file."""
     with open(file_name, 'w') as f:
       for i in range(9):
         f.write(','.join(self.sudoku.data[i]) + '\n')
@@ -100,6 +101,7 @@ class SudokuUI:
       f.write(self.level)
 
   def _auto_save(self):
+    """Automatically save sudoku to data file."""
     if self.data_file is None:
       return
     try:
@@ -108,6 +110,7 @@ class SudokuUI:
       self.message = 'Auto save failed'
 
   def _load(self):
+    """Load sudoku from date file."""
     try:
       with open(self.data_file, 'r') as f:
         contents = f.read().split('\n')
@@ -243,6 +246,8 @@ class SudokuUI:
         int(left + (self.curr_col + 0.5) * delta_x))
 
     self.stdscr.refresh()
+
+    # Show messages.
     if self.message:
       message_lines = self.message.strip().split('\n')
       message_width = max([len(m) for m in message_lines]) + 2
@@ -260,13 +265,17 @@ class SudokuUI:
       message_window.refresh()
 
   def _change_number(self, row, col, new_value):
-    """Change a number in a location."""
+    """Change a number in a location.
+
+    Returns:
+      True if the number is changed, false if the change is not valid.
+    """
     original_value = self.sudoku.get(row, col)
     if new_value == original_value:
-      return
+      return False
     if original_value != ' ' and self.colors[row][col] == 0:
       self.message = 'Can not change fixed number'
-      return
+      return False
     if self.sudoku.is_valid_value(row, col, new_value):
       self.curr_row = row
       self.curr_col = col
@@ -276,8 +285,10 @@ class SudokuUI:
                                             original_value, new_value)))
       self.redo_changes = []
       self._auto_save()
+      return True
     else:
       self.message = '{} is not valid here'.format(new_value)
+      return False
 
   def _change_color(self, new_color):
     """Change the current color."""
@@ -324,12 +335,12 @@ class SudokuUI:
           else:
             self._change_sudoku(self.generator.get_sudoku(level=self.level))
           self.confirm = None
-    elif key == ord('-'):
+    elif key == ord('-') or key == ord('_'):
       # Reduce size of the sudoku board.
       if self.height > 18:
         self.height -= 9
         self.width -= 18
-    elif key == ord('+'):
+    elif key == ord('+') or key == ord('='):
       # Increase size of the sudoku board.
       self.height += 9
       self.width += 18
@@ -351,8 +362,8 @@ class SudokuUI:
         _, self.mouse_x, self.mouse_y, _, _ = curses.getmouse()
       except Exception:
         curses.beep()
-    elif key == ord('a'):
-      # Automatcially solve the sudoku.
+    elif key == ord('a') or key == ord('A'):
+      # Automatically solve the sudoku.
       clone = sudoku_data.SudokuData()
       clone.copy(self.sudoku)
       solution = self.solver.solve(clone)
@@ -362,7 +373,7 @@ class SudokuUI:
           self._change_number(row, col, value)
       else:
         self.message = 'Not solvable'
-    elif key == ord('h'):
+    elif key == ord('h') or key == ord('H'):
       # Give hint of the next move.
       clone = sudoku_data.SudokuData()
       clone.copy(self.sudoku)
@@ -375,20 +386,20 @@ class SudokuUI:
           break
       else:
         self.message = 'Not solvable'
-    elif key == ord('n'):
+    elif key == ord('n') or key == ord('N'):
       # Generates a new sudoku.
       self.message = _NEW_SUDOKU_MSG
       self.confirm = _NEW_SUDOKU_CONFIRM
-    elif key == ord('c'):
+    elif key == ord('c') or key == ord('C'):
       # Change current color use for new numbers fill in the board.
       self._change_color(self.curr_color + 1)
-    elif key == ord('b'):
+    elif key == ord('b') or key == ord('B'):
       # Change current color to previous one.
       self._change_color(self.curr_color - 1)
-    elif key == ord('m'):
+    elif key == ord('m') or key == ord('M'):
       # Show or hide menu.
       self.message = _MENU
-    elif key == ord('u'):
+    elif key == ord('u') or key == ord('U'):
       # Undo changes.
       if self.changes:
         change_type, content = self.changes[-1]
@@ -410,7 +421,7 @@ class SudokuUI:
         self._auto_save()
       else:
         self.message = 'Nothing to undo'
-    elif key == ord('r'):
+    elif key == ord('r') or key == ord('R'):
       # Redo changes.
       if self.redo_changes:
         change_type, content = self.redo_changes[-1]
@@ -434,11 +445,16 @@ class SudokuUI:
         self.message = 'Nothing to redo'
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
-      self._change_number(self.curr_row, self.curr_col, chr(key))
-      if self.sudoku.is_solved():
+      if self._change_number(self.curr_row, self.curr_col,
+                             chr(key)) and self.sudoku.is_solved():
         self.message = _WIN_MSG
 
   def _initialize_sudoku(self):
+    """Try to load sudo from auto save file.
+
+    If the auto save file does not exist, generates a random sudoku with Easy
+    level.
+    """
     self.data_file = '/tmp/.magic_sudoku_autosave.data'
     if os.path.exists(self.data_file):
       self._load()
@@ -469,9 +485,8 @@ class SudokuUI:
     while key != ord('q'):
       self._process_key(key)
       self._draw_board()
-      # Generates a sudoku every turn in the background
-      # and cache them to make it faster when a new sudoku
-      # is really needed.
+      # Generates a sudoku every turn in the background and cache them to make
+      # it faster when a new sudoku is really needed.
       self.generator.generate_sudoku()
       # Get the input key.
       key = self.stdscr.getch()
