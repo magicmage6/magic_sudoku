@@ -35,8 +35,12 @@ class SudokuGenerator:
       clone2.copy(sudoku)
       self._min_solver.solve(clone2)
       is_same = True
-      for row in range(9):
-        for col in range(9):
+      start_row = random.randrange(9)
+      start_col = random.randrange(9)
+      for i in range(9):
+        for j in range(9):
+          row = int((start_row + i) % 9)
+          col = int((start_col + j) % 9)
           if clone1.get(row, col) != clone2.get(row, col):
             is_same = False
             sudoku.set(row, col, full_sudoku.get(row, col))
@@ -55,6 +59,22 @@ class SudokuGenerator:
     clone2.copy(sudoku)
     self._min_solver.solve(clone2)
     return clone1.is_same(clone2)
+
+  def get_sudoku_level(self, sudoku):
+    """Gets the level of the generated sudoku."""
+    nr_missing = 0
+    for row in range(9):
+      for col in range(9):
+        if sudoku.get(row, col) == ' ':
+          nr_missing += 1
+    if not self.is_partial_solvable(sudoku) or nr_missing > 53:
+      return 'CHALLENGER'
+    elif nr_missing <= 47:
+      return 'EASY'
+    elif nr_missing <= 50:
+      return 'MEDIUM'
+    else:
+      return 'HARD'
 
   def generate_sudoku(self):
     """Generates a new sudoku and add it to the correct level."""
@@ -75,19 +95,7 @@ class SudokuGenerator:
         sudoku.set(row, col, ' ')
         nr_removed += 1
     self.make_one_solution(sudoku, full_sudoku)
-    clone = sudoku_data.SudokuData()
-    clone.copy(sudoku)
-    solution = self._solver.solve(clone)
-    nr_missing = len(solution)
-    curr_level = 'EASY'
-    if not self.is_partial_solvable(sudoku) or nr_missing > 53:
-      curr_level = 'CHALLENGER'
-    elif nr_missing <= 47:
-      curr_level = 'EASY'
-    elif nr_missing <= 50:
-      curr_level = 'MEDIUM'
-    else:
-      curr_level = 'HARD'
+    curr_level = self.get_sudoku_level(sudoku)
     sudoku_list = self._sudoku_map[curr_level]
     if len(sudoku_list) < 100:
       sudoku_list.append(sudoku)

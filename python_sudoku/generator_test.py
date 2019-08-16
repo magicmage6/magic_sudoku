@@ -4,10 +4,18 @@ import sudoku_solver
 
 def test_generator(generator, level):
   sudoku = generator.get_sudoku(level=level)
+  passed = True
+  actual_level = generator.get_sudoku_level(sudoku)
+  if level != actual_level:
+    print('Level does not match. Expected {}. Actual {}'.format(
+        level, actual_level))
+    passed = False
   solver = sudoku_solver.SudokuSolver()
   solution = solver.solve(sudoku)
   if not solution:
     print('Can not solve the generated sudoku.')
+    passed = False
+  if not passed:
     raise RuntimeError('Test for {} level failed.'.format(level))
 
 
