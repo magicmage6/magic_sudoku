@@ -1,6 +1,6 @@
 # Magic Sudoku
 
-A Sudoku program written with Python. It is a starter project to learn Python curses library.
+A Sudoku program written in Python as a starter project to try Python curses library.
 
 # How to run it
 
@@ -9,7 +9,7 @@ cd python_sudoku
 python3 sudoku.py
 ```
 
-or if you know how to use bazel
+or if you know bazel
 
 ```shell
 bazel run //python_sudoku:sudoku
@@ -45,7 +45,7 @@ cd python_sudoku
 python3 sudoku_test.py
 ```
 
-or if you know how to use bazel
+or if you know bazel
 
 ```shell
 bazel run //python_sudoku:sudoku_test
