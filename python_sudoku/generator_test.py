@@ -21,16 +21,16 @@ def test_generator(generator, level):
 
 def test_generators():
   generator = sudoku_generator.SudokuGenerator()
-  for _ in range(20):
+  for _ in range(40):
     test_generator(generator, 'MEDIUM')
   print('Tests for MEDIUM level passed.')
-  for _ in range(10):
+  for _ in range(40):
     test_generator(generator, 'EASY')
   print('Tests for EASY level passed.')
-  for _ in range(10):
+  for _ in range(20):
     test_generator(generator, 'HARD')
   print('Tests for HARD level passed.')
-  for _ in range(10):
+  for _ in range(5):
     test_generator(generator, 'CHALLENGER')
   print('Tests for CHALLENGER level passed.')
   print('All tests passed.')

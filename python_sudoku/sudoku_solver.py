@@ -245,48 +245,61 @@ class SudokuSolver:
       else:
         solution.extend(partial_solution)
 
-    # Try it from the location where has the least number of possible values.
+    # Find the location where has the least number of possible values.
+    location = None
     for i in range(10):
       group = self._location_groups[i]
       if not group:
         continue
-      for row, col in group:
-        # This is the location with the least number of possible values, try it
-        # here.
-        possible_values = list(self._possible_values[row][col])
-        if self.randomize_type == 'min':
-          possible_values = sorted(possible_values)
-        elif self.randomize_type == 'max':
-          possible_values = sorted(possible_values)
-          possible_values.reverse()
-        else:
-          possible_values = _get_randomized_list(possible_values)
-        try_solution = None
-        # Try for every possible values.
-        for value in possible_values:
-          self._sudoku.set(row, col, value)
-          self._update_possible_values(row, col, value)
-          try_solution = self._fast_solve()
-          if try_solution is None:
-            # Fail to get valid solution, revert the try.
-            self._sudoku.set(row, col, ' ')
-            # We can incrementally update, but just reinitialize it seems to be fast enough.
-            self._initialize_data()
-          else:
-            # Get a valid solution.
-            solution.append((row, col, value))
-            solution.extend(try_solution)
-            break
-        if try_solution is None:
-          # Can't find valid solution. Revert pervious moves.
-          for row, col, _ in solution:
-            self._sudoku.set(row, col, ' ')
-          # We can incrementally update, but just reinitialize it seems to be fast enough.
-          self._initialize_data()
-          return None
-        break
+      if self.randomize_type == 'min' or self.randomize_type == 'max':
+        # Sort it to make it deterministic.
+        group = sorted(group)
+      else:
+        group = list(group)
+      location = group[0]
       break
-    return solution
+    if not location:
+      # All locations are filled in.
+      return solution
+
+    # This is the location with the least number of possible values, try it
+    # here.
+    row, col = location
+    possible_values = list(self._possible_values[row][col])
+    if self.randomize_type == 'min':
+      possible_values = sorted(possible_values)
+    elif self.randomize_type == 'max':
+      possible_values = sorted(possible_values)
+      possible_values.reverse()
+    else:
+      possible_values = _get_randomized_list(possible_values)
+
+    # Try for every possible values.
+    try_solution = None
+    for value in possible_values:
+      self._sudoku.set(row, col, value)
+      self._update_possible_values(row, col, value)
+      try_solution = self._fast_solve()
+      if try_solution is None:
+        # Fail to get valid solution, revert the try.
+        self._sudoku.set(row, col, ' ')
+        # We can incrementally update, but just reinitialize it seems to be fast
+        # enough.
+        self._initialize_data()
+      else:
+        # We have a successful try.
+        solution.append((row, col, value))
+        solution.extend(try_solution)
+        return solution
+
+    # Can't get a valid solution after trying all possible number here. This
+    # sudoku is not solvable. Revert previous moves.
+    for row, col, _ in solution:
+      self._sudoku.set(row, col, ' ')
+      # We can incrementally update, but just reinitialize it seems to be fast
+      # enough.
+      self._initialize_data()
+    return None
 
   def _simple_solve(self):
     """Solves a sudoku with simple recursive algorithm.

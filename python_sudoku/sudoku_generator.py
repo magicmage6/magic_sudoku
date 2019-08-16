@@ -67,11 +67,11 @@ class SudokuGenerator:
       for col in range(9):
         if sudoku.get(row, col) == ' ':
           nr_missing += 1
-    if not self.is_partial_solvable(sudoku) or nr_missing > 53:
+    if not self.is_partial_solvable(sudoku) or nr_missing > 52:
       return 'CHALLENGER'
-    elif nr_missing <= 47:
+    elif nr_missing <= 46:
       return 'EASY'
-    elif nr_missing <= 50:
+    elif nr_missing <= 49:
       return 'MEDIUM'
     else:
       return 'HARD'
