@@ -315,9 +315,9 @@ class SudokuSolver(object):
     """Solves a sudoku with simple recursive algorithm.
 
     This function uses simple recursive algorithm without run time optimization.
-    but it can still solve a sudoku within a second. It can be used for solving
-    a single sudoku, but will be too slow for solving a lot of sudokus or
-    generating a lot of random sudoku problems.
+    but it can still solve most sudokus within a second. It can be used for
+    solving a single sudoku, but will be too slow for solving a lot of sudokus
+    or generating a lot of random sudoku problems.
 
     Returns:
       A solution as a list of moves with each move as a tuple of row, column and
