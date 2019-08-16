@@ -23,6 +23,7 @@ b       Change color back
 a       Auto solve
 h       Hint
 u       Undo changes
+r       Redo changes
 Mouse   Move cursor
 Any     Dismiss menu
 """
@@ -75,6 +76,7 @@ class SudokuUI:
     self._setup_colors()
     self.data_file = '/tmp/magic_sudoku.data'
     self.changes = []
+    self.redo_changes = []
 
   def _setup_colors(self):
     """Setup curses colors."""
@@ -272,6 +274,7 @@ class SudokuUI:
       self.colors[self.curr_row][self.curr_col] = self.curr_color
       self.changes.append((_NUMBER_CHANGE, (self.curr_row, self.curr_col,
                                             original_value, new_value)))
+      self.redo_changes = []
       self._auto_save()
     else:
       self.message = '{} is not valid here'.format(new_value)
@@ -282,6 +285,7 @@ class SudokuUI:
     new_color = (new_color - 1) % self.num_colors + 1
     self.curr_color = new_color
     self.changes.append((_COLOR_CHANGE, (original_color, new_color)))
+    self.redo_changes = []
     self._auto_save()
 
   def _change_sudoku(self, new_sudoku):
@@ -295,6 +299,7 @@ class SudokuUI:
         (_SUDOKU_CHANGE, ((original_sudoku, original_colors,
                            original_curr_color), (self.sudoku, self.colors,
                                                   self.curr_color))))
+    self.redo_changes = []
     self._auto_save()
 
   def _process_key(self, key):
@@ -401,7 +406,32 @@ class SudokuUI:
           self.colors = original_colors
           self.curr_color = original_curr_color
         del self.changes[-1]
+        self.redo_changes.append((change_type, content))
         self._auto_save()
+      else:
+        self.message = 'Nothing to undo'
+    elif key == ord('r'):
+      # Redo changes.
+      if self.redo_changes:
+        change_type, content = self.redo_changes[-1]
+        if change_type == _NUMBER_CHANGE:
+          row, col, _, new_value = content
+          self.sudoku.set(row, col, new_value)
+          self.curr_row = row
+          self.curr_col = col
+        elif change_type == _COLOR_CHANGE:
+          _, new_color = content
+          self.curr_color = new_color
+        else:
+          _, (new_sudoku, new_colors, new_curr_color) = content
+          self.sudoku = new_sudoku
+          self.colors = new_colors
+          self.curr_color = new_curr_color
+        del self.redo_changes[-1]
+        self.changes.append((change_type, content))
+        self._auto_save()
+      else:
+        self.message = 'Nothing to redo'
     elif key >= ord('1') and key <= ord('9') or key == ord(' '):
       # Fill in a new number in the board. Space erases existing number.
       self._change_number(self.curr_row, self.curr_col, chr(key))
