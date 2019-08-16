@@ -57,6 +57,38 @@ class SudokuGenerator:
     self._min_solver.solve(clone2)
     return clone1.is_same(clone2)
 
+  def _calcuate_sudoku(self):
+    """Gets a new sudoku and add it to the correct level."""
+    nr_spaces = 56
+    sudoku = sudoku_data.SudokuData()
+    self._solver.solve(sudoku)
+    full_sudoku = sudoku_data.SudokuData()
+    full_sudoku.copy(sudoku)
+    nr_removed = 0
+    while nr_removed < nr_spaces:
+      row = random.randrange(9)
+      col = random.randrange(9)
+      if sudoku.get(row, col) != ' ':
+        sudoku.set(row, col, ' ')
+        nr_removed += 1
+    self.make_one_solution(sudoku, full_sudoku)
+    clone = sudoku_data.SudokuData()
+    clone.copy(sudoku)
+    solution = self._solver.solve(clone)
+    nr_missing = len(solution)
+    curr_level = 'EASY'
+    if not self.is_partial_solvable(sudoku) or nr_missing > 51:
+      curr_level = 'CHALLENGER'
+    elif nr_missing <= 45:
+      curr_level = 'EASY'
+    elif nr_missing <= 48:
+      curr_level = 'MEDIUM'
+    else:
+      curr_level = 'HARD'
+    sudoku_list = self._sudoku_map[curr_level]
+    if len(sudoku_list) < 100:
+      sudoku_list.append(sudoku)
+
   def get_sudoku(self, level='EASY'):
     """Generates a random sudoku problem.
 
@@ -66,36 +98,10 @@ class SudokuGenerator:
     level = level.upper()
     if level not in {'EASY', 'MEDIUM', 'HARD', 'CHALLENGER'}:
       raise ValueError('Level {} is not valid.'.format(level))
+    for _ in range(5):
+      self._calcuate_sudoku()
     for _ in range(100):
-      nr_spaces = 56
-      sudoku = sudoku_data.SudokuData()
-      self._solver.solve(sudoku)
-      full_sudoku = sudoku_data.SudokuData()
-      full_sudoku.copy(sudoku)
-      nr_removed = 0
-      while nr_removed < nr_spaces:
-        row = random.randrange(9)
-        col = random.randrange(9)
-        if sudoku.get(row, col) != ' ':
-          sudoku.set(row, col, ' ')
-          nr_removed += 1
-      self.make_one_solution(sudoku, full_sudoku)
-      clone = sudoku_data.SudokuData()
-      clone.copy(sudoku)
-      solution = self._solver.solve(clone)
-      nr_missing = len(solution)
-      curr_level = 'EASY'
-      if not self.is_partial_solvable(sudoku) or nr_missing > 51:
-        curr_level = 'CHALLENGER'
-      elif nr_missing <= 45:
-        curr_level = 'EASY'
-      elif nr_missing <= 48:
-        curr_level = 'MEDIUM'
-      else:
-        curr_level = 'HARD'
-      sudoku_list = self._sudoku_map[curr_level]
-      if len(sudoku_list) < 100:
-        sudoku_list.append(sudoku)
+      self._calcuate_sudoku()
       sudoku_list = self._sudoku_map[level]
       if sudoku_list:
         sudoku = sudoku_list[-1]
