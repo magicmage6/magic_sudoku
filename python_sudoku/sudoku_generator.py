@@ -11,8 +11,8 @@ class SudokuGenerator:
   def __init__(self):
     self._level = 0
     self._solver = sudoku_solver.SudokuSolver()
-    self._max_solver = sudoku_solver.SudokuSolver(randomize_type = 'max')
-    self._min_solver = sudoku_solver.SudokuSolver(randomize_type = 'min')
+    self._max_solver = sudoku_solver.SudokuSolver(randomize_type='max')
+    self._min_solver = sudoku_solver.SudokuSolver(randomize_type='min')
     self._sudoku_map = {'EASY': [], 'MEDIUM': [], 'HARD': [], 'CHALLENGER': []}
 
   def is_partial_solvable(self, sudoku):
@@ -46,7 +46,6 @@ class SudokuGenerator:
       if is_same:
         return
 
-      
   def has_only_one_solution(self, sudoku):
     """Whether the sudoku has only one solution."""
     clone1 = sudoku_data.SudokuData()

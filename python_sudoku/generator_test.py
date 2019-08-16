@@ -10,6 +10,7 @@ def test_generator(generator, level):
     print('Can not solve the generated sudoku.')
     raise RuntimeError('Test for {} level failed.'.format(level))
 
+
 def test_generators():
   generator = sudoku_generator.SudokuGenerator()
   for _ in range(20):
