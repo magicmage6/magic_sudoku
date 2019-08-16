@@ -50,16 +50,6 @@ class SudokuGenerator(object):
       if is_same:
         return
 
-  def has_only_one_solution(self, sudoku):
-    """Whether the sudoku has only one solution."""
-    clone1 = sudoku_data.SudokuData()
-    clone1.copy(sudoku)
-    self._max_solver.solve(clone1)
-    clone2 = sudoku_data.SudokuData()
-    clone2.copy(sudoku)
-    self._min_solver.solve(clone2)
-    return clone1.is_same(clone2)
-
   def get_sudoku_level(self, sudoku):
     """Gets the level of the generated sudoku."""
     nr_missing = 0
@@ -110,6 +100,9 @@ class SudokuGenerator(object):
 
   def get_sudoku(self, level='EASY'):
     """Generates a random sudoku problem.
+
+    Args:
+      level: The level of the sudoku to get.
 
     Returns:
       A random generated sudoku problem.

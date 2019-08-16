@@ -55,7 +55,7 @@ _SUDOKU_CHANGE = 3
 _NEW_SUDOKU_CONFIRM = 1
 
 
-class SudokuUI:
+class SudokuUI(object):
   """Class for sudoku UI with curses."""
 
   def __init__(self, stdscr):
@@ -266,6 +266,11 @@ class SudokuUI:
 
   def _change_number(self, row, col, new_value):
     """Change a number in a location.
+
+    Args:
+      row: The row of the location.
+      col: The column of the location.
+      new_value: The number to fill in.
 
     Returns:
       True if the number is changed, false if the change is not valid.

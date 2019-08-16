@@ -130,22 +130,23 @@ class SudokuSolver(object):
     self._possible_values = [[set()] * 9 for _ in range(9)]
     for row in range(9):
       for col in range(9):
-        c = self._sudoku.get(row, col)
-        if c == ' ':
+        value = self._sudoku.get(row, col)
+        if value == ' ':
           self._possible_values[row][col] = {str(i) for i in range(1, 10)}
         else:
-          self._possible_values[row][col] = {c}
+          self._possible_values[row][col] = {value}
     for row in range(9):
       for col in range(9):
-        c = self._sudoku.get(row, col)
-        if c != ' ':
-          self._update_possible_values(row, col, c)
+        value = self._sudoku.get(row, col)
+        if value != ' ':
+          self._update_possible_values(row, col, value)
     for i in range(10):
       self._location_groups[i] = set()
-    for i in range(9):
-      for j in range(9):
-        if self._sudoku.get(i, j) == ' ':
-          self._location_groups[len(self._possible_values[i][j])].add((i, j))
+    for row in range(9):
+      for col in range(9):
+        if self._sudoku.get(row, col) == ' ':
+          self._location_groups[len(self._possible_values[row][col])].add(
+              (row, col))
 
   def _initialize_possible_locations(self):
     """Initializes the possible locations of a number in each region.
@@ -317,6 +318,11 @@ class SudokuSolver(object):
     but it can still solve a sudoku within a second. It can be used for solving
     a single sudoku, but will be too slow for solving a lot of sudokus or
     generating a lot of random sudoku problems.
+
+    Returns:
+      A solution as a list of moves with each move as a tuple of row, column and
+        value, where value is a character between '1' and '9'. Returns None if
+        the sudoku is not solvable.
     """
     if not self._sudoku.is_valid():
       return None
@@ -351,13 +357,13 @@ class SudokuSolver(object):
 
     Args:
       sudoku: A sudoku to solve. An object of sudoku_data.SudokuData.
-      simple: If true, use simple solver, otherwise use other solvers.
       partial: If true, use partial solver, otherwise use fast solver.
+      simple: If true, use simple solver, otherwise use other solvers.
 
     Returns:
-      A list of solutions with each solution as a tuple of row, column and
-        value, where value is a character between '1' and '9'. Returns None
-        if the sudoku is not solvable.
+      A solution as a list of moves with each move as a tuple of row, column and
+        value, where value is a character between '1' and '9'. Returns None if
+        the sudoku is not solvable.
     """
     self._sudoku = sudoku
     if simple:
