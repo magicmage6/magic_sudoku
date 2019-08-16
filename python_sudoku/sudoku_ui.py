@@ -95,6 +95,7 @@ class SudokuUI:
         f.write(','.join(self.sudoku.data[i]) + '\n')
       for i in range(9):
         f.write(','.join([str(c) for c in self.colors[i]]) + '\n')
+      f.write(self.level)
 
   def _auto_save(self):
     if self.data_file is None:
@@ -109,8 +110,13 @@ class SudokuUI:
       with open(self.data_file, 'r') as f:
         contents = f.read().split('\n')
         self.sudoku.from_lines(contents)
-        for i in range(9):
-          self.colors[i] = [int(c) for c in contents[i + 9].split(',')]
+        if len(contents) >= 18:
+          for i in range(9):
+            self.colors[i] = [int(c) for c in contents[i + 9].split(',')]
+        if len(contents) > 18:
+          level = contents[18]
+          if level in {'Easy', 'Medium', 'Hard', 'Challenger'}:
+            self.level = contents[18]
     except IOError:
       curses.beep()
 
@@ -150,7 +156,7 @@ class SudokuUI:
       self.mouse_y = None
 
     # Show title.
-    title = 'Magic Sudoku'
+    title = 'Magic Sudoku ({})'.format(self.level)
     title_y = int(up / 2)
     self.stdscr.attron(curses.color_pair(self.curr_color))
     self.stdscr.addstr(title_y, max(0, int((max_x - len(title)) / 2)), title)
