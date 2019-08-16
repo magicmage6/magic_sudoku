@@ -24,13 +24,13 @@ def test_generators():
   for _ in range(40):
     test_generator(generator, 'MEDIUM')
   print('Tests for MEDIUM level passed.')
-  for _ in range(40):
+  for _ in range(100):
     test_generator(generator, 'EASY')
   print('Tests for EASY level passed.')
   for _ in range(20):
     test_generator(generator, 'HARD')
   print('Tests for HARD level passed.')
-  for _ in range(5):
+  for _ in range(3):
     test_generator(generator, 'CHALLENGER')
   print('Tests for CHALLENGER level passed.')
   print('All tests passed.')

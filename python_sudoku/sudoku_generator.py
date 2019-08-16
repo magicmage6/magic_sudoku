@@ -5,7 +5,7 @@ import sudoku_data
 import sudoku_solver
 
 
-class SudokuGenerator:
+class SudokuGenerator(object):
   """Class for sudoku generator."""
 
   def __init__(self):

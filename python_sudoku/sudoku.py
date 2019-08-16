@@ -1,3 +1,5 @@
+"""Main function to run sudoku."""
+
 import sudoku_ui
 
 

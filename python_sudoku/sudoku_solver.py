@@ -30,14 +30,14 @@ def _get_randomized_list(data):
   return randomized_data
 
 
-class SudokuSolver:
+class SudokuSolver(object):
   """Class for sudoku solver."""
 
   def __init__(self, randomize_type='random'):
     self._sudoku = sudoku_data.SudokuData()
-    self._possible_values = [[{}] * 9 for _ in range(9)]
+    self._possible_values = [[set()] * 9 for _ in range(9)]
     # A list grouping locations by the number of possible values.
-    self._location_groups = [{}] * 10
+    self._location_groups = [set()] * 10
     # A dictionary mapping the possible locations of a number in a region.
     self._possible_locations = {}
     # A dictionary of unique locations for a number in a region.
@@ -52,6 +52,14 @@ class SudokuSolver:
 
     This function is used to help update the possible locations when a new
     number is filled in.
+
+    Args:
+      row: The row of the location.
+      col: The column of the location.
+      value: The number to get the key.
+
+    Returns:
+      The keys to the map of possible locations.
     """
     return [(_ROW_REGION, row, value), (_COLUMN_REGION, col, value),
             (_BOX_REGION, int(row / 3) * 3 + int(col / 3), value)]
@@ -67,7 +75,8 @@ class SudokuSolver:
     if value in self._possible_values[row][col]:
       orig_len = len(self._possible_values[row][col])
       self._possible_values[row][col].remove(value)
-      # Update the dictionary grouping the location by number of possible values.
+      # Update the dictionary grouping the location by number of possible
+      # values.
       if (row, col) in self._location_groups[orig_len]:
         self._location_groups[orig_len].remove((row, col))
         self._location_groups[orig_len - 1].add((row, col))
@@ -118,19 +127,19 @@ class SudokuSolver:
 
   def _initialize_possible_values(self):
     """Initializes possible values at every location."""
-    self._possible_values = [[{}] * 9 for _ in range(9)]
-    for i in range(9):
-      for j in range(9):
-        c = self._sudoku.get(i, j)
+    self._possible_values = [[set()] * 9 for _ in range(9)]
+    for row in range(9):
+      for col in range(9):
+        c = self._sudoku.get(row, col)
         if c == ' ':
-          self._possible_values[i][j] = {str(i) for i in range(1, 10)}
+          self._possible_values[row][col] = {str(i) for i in range(1, 10)}
         else:
-          self._possible_values[i][j] = {c}
-    for i in range(9):
-      for j in range(9):
-        c = self._sudoku.get(i, j)
+          self._possible_values[row][col] = {c}
+    for row in range(9):
+      for col in range(9):
+        c = self._sudoku.get(row, col)
         if c != ' ':
-          self._update_possible_values(i, j, c)
+          self._update_possible_values(row, col, c)
     for i in range(10):
       self._location_groups[i] = set()
     for i in range(9):

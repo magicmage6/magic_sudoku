@@ -1,7 +1,7 @@
 """Sudoku data."""
 
 
-class SudokuData:
+class SudokuData(object):
   """Class for sudoku data."""
 
   def __init__(self):
