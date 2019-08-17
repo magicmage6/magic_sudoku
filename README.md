@@ -26,7 +26,7 @@ bazel run //python_sudoku:sudoku
 | Key   | Action |
 | ----- | -------- |
 |q      | Quit |
-|m      | Show menu |
+|m      | Show/hide menu |
 |n      | New sudoku |
 |Up     | Cursor up |
 |Down   | Cursor down |
