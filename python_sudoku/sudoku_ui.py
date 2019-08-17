@@ -325,6 +325,7 @@ class SudokuUI(object):
       curses.curs_set(1)
       if self.confirm is not None:
         if self.confirm == _NEW_SUDOKU_CONFIRM:
+          self.confirm = None
           if key == ord('0'):
             self.level = 'Easy'
           elif key == ord('1'):
@@ -335,11 +336,12 @@ class SudokuUI(object):
             self.level = 'Hard'
           elif key == ord('4'):
             self.level = 'Challenger'
+          else:
+            return
           if key == ord('0'):
             self._change_sudoku(sudoku_data.SudokuData())
           else:
             self._change_sudoku(self.generator.get_sudoku(level=self.level))
-          self.confirm = None
     elif key == ord('-') or key == ord('_'):
       # Reduce size of the sudoku board.
       if self.height > 18:
