@@ -321,6 +321,10 @@ class SudokuUI(object):
   def _process_key(self, key):
     """Process the key and mouse events."""
     if self.message:
+      if self.message == _WIN_MSG:
+        self.message = _NEW_SUDOKU_MSG
+        self.confirm = _NEW_SUDOKU_CONFIRM
+        return
       self.message = None
       curses.curs_set(1)
       if self.confirm is not None:
