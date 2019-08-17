@@ -17,7 +17,7 @@ bazel run //python_sudoku:sudoku
 
 # Menus to play it
 
-| Key   | Effect |
+| Key   | Action |
 | ----- | -------- |
 |q      | Quit |
 |m      | Show menu |
