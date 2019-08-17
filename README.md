@@ -2,6 +2,12 @@
 
 A Sudoku program written in Python as a starter project to try Python curses library.
 
+# How to download it
+
+```shell
+git clone https://github.com/magicmage6/python_sudoko
+```
+
 # How to run it
 
 ```shell
