@@ -105,7 +105,6 @@ class SudokuSolver(object):
     for c in copy.copy(possible_values):
       if c != value:
         self._remove_possible_values(row, col, c)
-    self._possible_values[row][col] = {}
     for i in range(9):
       if i != row and self._sudoku.get(i, col) == ' ':
         self._remove_possible_values(i, col, value)
@@ -133,8 +132,6 @@ class SudokuSolver(object):
         value = self._sudoku.get(row, col)
         if value == ' ':
           self._possible_values[row][col] = {str(i) for i in range(1, 10)}
-        else:
-          self._possible_values[row][col] = {value}
     for row in range(9):
       for col in range(9):
         value = self._sudoku.get(row, col)
