@@ -5,7 +5,7 @@ A Sudoku program written in Python as a starter project to try Python curses lib
 # How to download it
 
 ```shell
-git clone https://github.com/magicmage6/python_sudoko
+git clone https://github.com/magicmage6/magic_sudoku
 ```
 
 # How to run it
